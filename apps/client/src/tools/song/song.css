@@ -1,0 +1,141 @@
+.song-transport {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.play-btn {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--c-song);
+  border-color: var(--c-song);
+  color: #fff;
+}
+
+.play-btn:hover {
+  background: color-mix(in srgb, var(--c-song) 85%, black);
+  border-color: transparent;
+}
+
+.play-btn.on {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.tempo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 140px;
+}
+
+.tempo input {
+  accent-color: var(--c-song);
+}
+
+.song-settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.song-scroll {
+  overflow-x: auto;
+  padding: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.song-grid {
+  --cell: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: max-content;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@media (max-width: 600px) {
+  .song-grid {
+    --cell: 27px;
+  }
+}
+
+.song-row {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.drum-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 48px;
+  flex: none;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--ink-2);
+  background: var(--card);
+}
+
+.song-cell {
+  width: var(--cell);
+  height: var(--cell);
+  flex: none;
+  border-radius: 7px;
+  background: var(--bg-2);
+  cursor: pointer;
+  transition:
+    transform 0.08s,
+    background 0.08s;
+  touch-action: manipulation;
+}
+
+.song-cell.alt {
+  background: #ebe1d1;
+}
+
+.song-cell.beat {
+  margin-left: 3px;
+}
+
+.song-cell.bar {
+  margin-left: 9px;
+}
+
+.song-row .song-cell:first-of-type {
+  margin-left: 0;
+}
+
+.song-cell:hover {
+  outline: 2px solid var(--line-2);
+}
+
+.song-cell.on {
+  background: var(--note);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.15);
+}
+
+.track-drums .song-cell.on {
+  border-radius: 50%;
+}
+
+.song-cell.now {
+  filter: brightness(0.93);
+}
+
+.song-cell.now.on {
+  transform: scale(1.14);
+  filter: brightness(1.12);
+}
+
+.song-mini {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+}

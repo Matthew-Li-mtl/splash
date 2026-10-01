@@ -1,0 +1,27 @@
+{
+  "name": "splash",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "npm run dev -w @splash/server",
+    "dev:client": "npm run dev -w @splash/client",
+    "build": "npm run build -w @splash/client && npm run build -w @splash/server",
+    "start": "node apps/server/dist/index.js",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "mobile:sync": "npm run mobile:sync -w @splash/client",
+    "mobile:android": "npm run mobile:android -w @splash/client",
+    "mobile:ios": "npm run mobile:ios -w @splash/client",
+    "smoke": "node scripts/smoke-api.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "typescript": "^7.0.2"
+  }
+}

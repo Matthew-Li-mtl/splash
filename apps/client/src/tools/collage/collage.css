@@ -1,0 +1,236 @@
+.c-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 10px 28px -14px rgba(45, 38, 32, 0.4);
+  background: #fbf3e4;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.c-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.c-el {
+  position: absolute;
+}
+
+.c-stage.editing .c-el {
+  cursor: grab;
+  touch-action: none;
+}
+
+.c-stage.editing .c-el:active {
+  cursor: grabbing;
+}
+
+.c-el.selected {
+  outline: calc(3px * var(--ui)) dashed rgba(45, 38, 32, 0.75);
+  outline-offset: calc(6px * var(--ui));
+}
+
+.c-handle {
+  position: absolute;
+  right: calc(-22px * var(--ui));
+  bottom: calc(-22px * var(--ui));
+  width: calc(30px * var(--ui));
+  height: calc(30px * var(--ui));
+  border-radius: 50%;
+  background: var(--ink);
+  border: calc(3px * var(--ui)) solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+.c-handle::after {
+  content: "";
+  position: absolute;
+  inset: 22%;
+  border: calc(2.5px * var(--ui)) solid #fff;
+  border-left-color: transparent;
+  border-radius: 50%;
+}
+
+.c-fill {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.c-img {
+  width: 100%;
+  height: 100%;
+}
+
+.c-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.c-img.frame-none {
+  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.35);
+}
+
+.c-img.frame-border {
+  border: 12px solid #fff;
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.4);
+}
+
+.c-img.frame-polaroid {
+  background: #fff;
+  padding: 5% 5% 20%;
+  box-shadow: 0 8px 22px -8px rgba(0, 0, 0, 0.45);
+}
+
+.c-img.frame-round img {
+  border-radius: 50%;
+}
+
+.c-text {
+  line-height: 1.15;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-radius: 6px;
+}
+
+.c-sticker {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.18));
+}
+
+.c-shape {
+  width: 100%;
+  height: 100%;
+  background: var(--c);
+}
+
+.shape-circle {
+  border-radius: 50%;
+}
+
+.shape-rect {
+  border-radius: 4px;
+}
+
+.shape-tape {
+  opacity: 0.78;
+  background: repeating-linear-gradient(45deg, var(--c) 0 14px, color-mix(in srgb, var(--c) 80%, white) 14px 28px);
+  clip-path: polygon(0% 6%, 2% 0%, 4% 8%, 6% 0%, 94% 0%, 96% 8%, 98% 0%, 100% 6%, 100% 94%, 98% 100%, 96% 92%, 94% 100%, 6% 100%, 4% 92%, 2% 100%, 0% 94%);
+}
+
+.shape-torn {
+  clip-path: polygon(2% 6%, 14% 0%, 27% 5%, 41% 1%, 55% 6%, 70% 0%, 84% 4%, 98% 2%, 100% 18%, 96% 33%, 100% 50%, 97% 66%, 100% 82%, 97% 98%, 82% 95%, 68% 100%, 52% 96%, 37% 100%, 22% 95%, 6% 99%, 0% 84%, 4% 68%, 0% 52%, 3% 36%, 0% 20%);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.06);
+}
+
+.shape-star {
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+/* ---------- Editor layout ---------- */
+
+/* Add-buttons: a compact icon row on phones, regular pills on wider screens. */
+.tool-tray {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.tool-tray .btn {
+  flex-direction: column;
+  gap: 3px;
+  min-height: 58px;
+  padding: 6px 2px;
+  border-radius: 14px;
+  font-size: 0.74rem;
+}
+
+@media (min-width: 600px) {
+  .tool-tray {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .tool-tray .btn {
+    flex-direction: row;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+  }
+}
+
+.collage-layout {
+  display: grid;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (min-width: 860px) {
+  .collage-layout {
+    grid-template-columns: minmax(0, 540px) minmax(280px, 1fr);
+  }
+  .collage-side {
+    position: sticky;
+    top: 90px;
+  }
+}
+
+.collage-stage-wrap {
+  max-width: 540px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.draw-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10000;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+  gap: 6px;
+}
+
+.mini-grid button {
+  aspect-ratio: 1;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.mini-grid button[aria-pressed="true"] {
+  border-color: var(--ink);
+  border-width: 2.5px;
+}
+
+.bg-swatch {
+  width: 100%;
+  height: 100%;
+}

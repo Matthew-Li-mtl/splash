@@ -1,0 +1,70 @@
+.ms-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ms-board {
+  --cell: max(24px, min(40px, calc((100vw - 48px) / var(--n))));
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--cell));
+  gap: 3px;
+  width: max-content;
+  margin: 0 auto;
+  padding: 8px;
+  border-radius: 14px;
+  background: #ded2bf;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.ms-cell {
+  width: var(--cell);
+  height: var(--cell);
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: linear-gradient(#a8c7a3, #8db48a);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.14);
+  font-size: calc(var(--cell) * 0.52);
+  font-weight: 900;
+  font-family: var(--font-body);
+  cursor: pointer;
+  touch-action: manipulation;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+
+.ms-cell:hover:not(.open) {
+  filter: brightness(1.06);
+}
+
+.ms-cell.start {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    filter: brightness(1.25);
+  }
+}
+
+.ms-cell.open {
+  background: #f7f0e3;
+  box-shadow: none;
+  cursor: default;
+}
+
+.ms-cell.boom {
+  background: #f1a596;
+}
+
+.ms-cell[data-n="1"] { color: #3c6fb6; }
+.ms-cell[data-n="2"] { color: #3f8a5a; }
+.ms-cell[data-n="3"] { color: #cf4b3a; }
+.ms-cell[data-n="4"] { color: #6b4aa3; }
+.ms-cell[data-n="5"] { color: #a3532c; }
+.ms-cell[data-n="6"] { color: #2b8a8a; }
+.ms-cell[data-n="7"] { color: #2d2620; }
+.ms-cell[data-n="8"] { color: #7a7066; }

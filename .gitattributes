@@ -1,0 +1,18 @@
+# Store text files with LF line endings so the repo behaves the same on Windows,
+# macOS, Linux and Render. Shell scripts (e.g. android/gradlew) break with CRLF.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.jar binary
+*.woff binary
+*.woff2 binary

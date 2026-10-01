@@ -1,0 +1,28 @@
+# Pings the deployed app so Render's free tier doesn't put it to sleep (it sleeps
+# after ~15 idle minutes). Set the repo variable APP_URL to turn it on:
+#   GitHub → Settings → Secrets and variables → Actions → Variables → New: APP_URL = https://splash-abcd.onrender.com
+# Without APP_URL the job does nothing. See docs/DEPLOY.md for the cost notes.
+name: Keep awake
+
+on:
+  schedule:
+    # Every 10 minutes. GitHub may run scheduled jobs a few minutes late.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping /api/health
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          if [ -z "$APP_URL" ]; then
+            echo "APP_URL repo variable not set; skipping."
+            exit 0
+          fi
+          # A sleeping server can take ~60s to wake, so allow plenty of time and retry once.
+          curl --fail --silent --show-error --max-time 90 --retry 1 --retry-delay 10 \
+            "${APP_URL%/}/api/health"
