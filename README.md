@@ -27,7 +27,6 @@ TypeScript everywhere · React 19 + Vite 8 + React Router + TanStack Query · Ex
 apps/client        React web app (also the mobile app, via Capacitor: android/, ios/)
 apps/server        Express API; in production it also serves the built web app
 packages/shared    Types, post content shapes, and the two-player game rules
-docs/              DEPLOY.md (free hosting), MOBILE.md (phones)
 scripts/           smoke-api.mjs: end-to-end API check
 ```
 
@@ -48,13 +47,12 @@ npm run build       # build web app + server bundle
 npm start           # run the production build (serves the web app at http://localhost:4000)
 npm run typecheck   # TypeScript across all packages
 npm run smoke -- http://localhost:4000   # API regression check. Writes test users, so use a dev DB
-npm run mobile:android                   # build + open Android Studio (see docs/MOBILE.md)
+npm run mobile:android                   # build + open Android Studio
 ```
 
-## Next steps
+## Deploying
 
-- **Deploy for free:** [docs/DEPLOY.md](docs/DEPLOY.md)
-- **Put it on phones:** [docs/MOBILE.md](docs/MOBILE.md)
-- **Working on the code (or with Claude):** [CLAUDE.md](CLAUDE.md) explains the architecture and how to add a tool or a game.
+Runs as one free Render service (`render.yaml` is a Blueprint) with a free MongoDB Atlas cluster.
+Set `MONGO_URI` when Render asks; `JWT_SECRET` is generated for you.
 
 `project-brief.md` is the original vision doc. This README reflects what's actually built.
