@@ -6,9 +6,9 @@ import { HttpError, currentUser } from "../http";
 import { Game } from "../models/Game";
 import { toMe } from "../serialize";
 import { updateInterestCounts } from "../services/neighborhoods";
-import { hiddenObjectIds } from "../services/blocks";
 import { listThreads } from "./messages";
 import { avatarSchema, interestsSchema } from "../validation";
+import { hiddenObjectIds } from "../services/blocks";
 
 export const meRouter = Router();
 
