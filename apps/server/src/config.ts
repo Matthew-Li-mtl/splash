@@ -27,6 +27,8 @@ export const config = {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean),
+  /** Access-token lifetime. Short on purpose; only lower it for testing. */
+  accessTokenTtlSeconds: Number(process.env.ACCESS_TOKEN_TTL_SECONDS) || 15 * 60,
   /** Per-user image storage cap. Keeps the free 512 MB Atlas tier comfortable. */
   assetQuotaBytes: (Number(process.env.ASSET_QUOTA_MB) || 15) * 1024 * 1024,
 };

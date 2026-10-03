@@ -35,9 +35,10 @@ export function ErrorState({ error, retry }: { error: unknown; retry?: () => voi
  * sleep when idle, so the first request can take a while — say so kindly.
  */
 export function WakingUp() {
-  const me = useMe();
+  const me = useMe(false);
   const qc = useQueryClient();
-  const { logout } = useAuth();
+  const { logout, bootError, retryBoot } = useAuth();
+  const error = bootError ?? (me.isError ? me.error : null);
   const [slow, setSlow] = useState(false);
 
   useEffect(() => {
@@ -49,15 +50,15 @@ export function WakingUp() {
     <div className="splash">
       <div className="stack" style={{ maxWidth: 360, alignItems: "center" }}>
         <Logo />
-        {me.isError ? (
+        {error ? (
           <>
             <h2>Can't reach the neighborhood</h2>
-            <p className="muted">{errorMessage(me.error)}</p>
+            <p className="muted">{errorMessage(error)}</p>
             <div className="row">
-              <button className="btn btn-primary" onClick={() => qc.invalidateQueries({ queryKey: ["me"] })}>
+              <button className="btn btn-primary" onClick={() => (bootError ? retryBoot() : qc.invalidateQueries({ queryKey: ["me"] }))}>
                 Try again
               </button>
-              <button className="btn btn-ghost" onClick={logout}>
+              <button className="btn btn-ghost" onClick={() => void logout()}>
                 Sign out
               </button>
             </div>
