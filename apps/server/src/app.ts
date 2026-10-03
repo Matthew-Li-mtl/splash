@@ -10,6 +10,7 @@ import { config } from "./config";
 import { errorHandler, notFound } from "./http";
 import { assetsRouter } from "./routes/assets";
 import { authRouter } from "./routes/auth";
+import { blocksRouter } from "./routes/blocks";
 import { gamesRouter } from "./routes/games";
 import { meRouter } from "./routes/me";
 import { messagesRouter } from "./routes/messages";
@@ -59,6 +60,7 @@ export function createApp() {
   app.use("/api/posts", requireAuth, postsRouter);
   app.use("/api/messages", requireAuth, messagesRouter);
   app.use("/api/games", requireAuth, gamesRouter);
+  app.use("/api/blocks", requireAuth, blocksRouter);
   app.use("/api", () => {
     throw notFound("No such API route.");
   });

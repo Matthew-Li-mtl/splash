@@ -6,6 +6,7 @@ import { HttpError, currentUser } from "../http";
 import { Game } from "../models/Game";
 import { toMe } from "../serialize";
 import { updateInterestCounts } from "../services/neighborhoods";
+import { hiddenObjectIds } from "../services/blocks";
 import { listThreads } from "./messages";
 import { avatarSchema, interestsSchema } from "../validation";
 
@@ -56,6 +57,7 @@ meRouter.get("/badges", async (req, res) => {
   const [yourTurn, threads] = await Promise.all([
     Game.countDocuments({
       status: "active",
+      players: { $nin: await hiddenObjectIds(user) },
       $or: [
         { "players.0": user._id, "state.turn": 0 },
         { "players.1": user._id, "state.turn": 1 },

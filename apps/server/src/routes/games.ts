@@ -6,6 +6,7 @@ import { Game, type GameDoc } from "../models/Game";
 import type { UserDoc } from "../models/User";
 import { loadUsers, userOrPlaceholder } from "../serialize";
 import { isNeighbor } from "../services/access";
+import { hiddenObjectIds, isBlockedBetween } from "../services/blocks";
 
 export const gamesRouter = Router();
 
@@ -25,6 +26,7 @@ async function toGameDTOs(games: GameDoc[], user: UserDoc): Promise<GameDTO[]> {
     status: g.status,
     you: seatOf(g, user),
     resignedBy: (g.resignedBy ?? null) as Player | null,
+    cancelled: !!g.cancelled,
     moveCount: g.moveCount,
     createdAt: g.createdAt.toISOString(),
     updatedAt: g.updatedAt.toISOString(),
@@ -34,7 +36,8 @@ async function toGameDTOs(games: GameDoc[], user: UserDoc): Promise<GameDTO[]> {
 async function findMyGame(user: UserDoc, id: unknown) {
   const game = await Game.findById(objectId(id, "game"));
   if (!game) throw notFound("Game not found.");
-  seatOf(game, user);
+  const seat = seatOf(game, user);
+  if (await isBlockedBetween(user._id, game.players[seat === 0 ? 1 : 0])) throw notFound("Game not found.");
   return game;
 }
 
@@ -43,7 +46,7 @@ gamesRouter.get("/", async (req, res) => {
   const user = currentUser(req);
   const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
   const games = await Game.find({
-    players: user._id,
+    $and: [{ players: user._id }, { players: { $nin: await hiddenObjectIds(user) } }],
     $or: [{ status: "active" }, { updatedAt: { $gte: since } }],
   })
     .sort({ updatedAt: -1 })
