@@ -3,6 +3,7 @@ import { Link, Navigate, Route, Routes, useLocation, useNavigate, useSearchParam
 import { ArrowLeft } from "lucide-react";
 import { AVATAR_COLORS, AVATAR_EMOJIS, USERNAME_PATTERN, type Avatar } from "@splash/shared";
 import { Logo } from "../components/Logo";
+import { WakingUp } from "../components/States";
 import { AvatarPicker, InterestPicker } from "../components/Pickers";
 import { errorMessage } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -10,9 +11,11 @@ import { useAuth } from "../lib/auth";
 export function Welcome() {
   // Only bounce people who arrive already signed in. Signing in or up here
   // navigates on its own (e.g. to the "moved in" screen), so don't race it.
-  const { signedIn } = useAuth();
-  const [arrivedSignedIn] = useState(signedIn);
-  if (arrivedSignedIn) return <Navigate to="/" replace />;
+  const { status } = useAuth();
+  const [arrivedAs] = useState(status);
+  // Still restoring a session from the refresh cookie: wait rather than flash the form.
+  if (status === "checking") return <WakingUp />;
+  if (arrivedAs === "signedIn" || (arrivedAs === "checking" && status === "signedIn")) return <Navigate to="/" replace />;
 
   return (
     <div className="welcome">

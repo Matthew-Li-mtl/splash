@@ -7,6 +7,8 @@ export class HttpError extends Error {
   constructor(
     public status: number,
     message: string,
+    /** Optional machine-readable reason the client can branch on (e.g. "refresh_retry"). */
+    public code?: string,
   ) {
     super(message);
   }
@@ -29,7 +31,7 @@ export function objectId(value: unknown, what = "id"): mongoose.Types.ObjectId {
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof HttpError) {
-    res.status(err.status).json({ error: err.message });
+    res.status(err.status).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   } else if (err instanceof ZodError) {
     const issue = err.issues[0];
     const where = issue?.path.length ? `${issue.path.join(".")}: ` : "";

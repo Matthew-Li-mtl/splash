@@ -24,9 +24,9 @@ const MinesweeperPage = lazy(() => import("./tools/minesweeper/MinesweeperPage")
 const GamePage = lazy(() => import("./games/GamePage"));
 
 function RequireAuth({ children }: { children: ReactNode }) {
-  const { signedIn, user, loading } = useAuth();
+  const { status, user, loading } = useAuth();
   const location = useLocation();
-  if (!signedIn) return <Navigate to="/welcome" replace state={{ from: location.pathname }} />;
+  if (status === "signedOut") return <Navigate to="/welcome" replace state={{ from: location.pathname }} />;
   if (loading || !user) return <WakingUp />;
   return children;
 }
