@@ -5,6 +5,7 @@ import { Neighborhood } from "../models/Neighborhood";
 import { User, type UserDoc } from "../models/User";
 import { toMe, toPublicUser } from "../serialize";
 import { assignNeighborhood, leaveNeighborhood } from "../services/neighborhoods";
+import { hiddenUserIds } from "../services/blocks";
 
 export const neighborhoodRouter = Router();
 
@@ -13,7 +14,9 @@ async function neighborhoodDTO(user: UserDoc): Promise<NeighborhoodDTO> {
     ? await Neighborhood.findById(user.neighborhoodId)
     : await assignNeighborhood(user);
   if (!hood) throw notFound("Neighborhood not found.");
-  const members = await User.find({ neighborhoodId: hood._id }).sort({ createdAt: 1 });
+  const hidden = await hiddenUserIds(user);
+  // People hidden by a block aren't listed (in either direction).
+  const members = (await User.find({ neighborhoodId: hood._id }).sort({ createdAt: 1 })).filter((m) => !hidden.has(m.id));
   return {
     id: hood.id,
     name: hood.name,

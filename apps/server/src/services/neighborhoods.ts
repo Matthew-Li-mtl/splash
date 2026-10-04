@@ -3,7 +3,8 @@ import type { Types } from "mongoose";
 import { NEIGHBORHOOD_CAPACITY } from "@splash/shared";
 import { badRequest } from "../http";
 import { Neighborhood, type NeighborhoodDoc } from "../models/Neighborhood";
-import type { UserDoc } from "../models/User";
+import { User, type UserDoc } from "../models/User";
+import { hiddenObjectIds } from "./blocks";
 
 const FIRST = [
   "Willow", "Maple", "Juniper", "Birch", "Cedar", "Hazel", "Linden", "Aspen", "Rowan", "Alder",
@@ -66,9 +67,13 @@ export async function assignNeighborhood(
     seat = await claimSeat(invited._id, user.interests);
     if (!seat) throw badRequest("That neighborhood is full. Sign up without the code to be matched with another one.");
   } else {
+    // Never seat someone on the same street as a person they blocked (or who blocked them).
+    const hidden = await hiddenObjectIds(user);
+    const blockedStreets = hidden.length ? await User.distinct("neighborhoodId", { _id: { $in: hidden } }) : [];
+    const avoid = [...blockedStreets.filter(Boolean), ...(opts.exclude ? [opts.exclude] : [])];
     const open = await Neighborhood.find({
       memberCount: { $lt: NEIGHBORHOOD_CAPACITY },
-      ...(opts.exclude ? { _id: { $ne: opts.exclude } } : {}),
+      ...(avoid.length ? { _id: { $nin: avoid } } : {}),
     })
       .sort({ memberCount: -1 })
       .limit(50);

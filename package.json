@@ -18,7 +18,8 @@
     "mobile:sync": "npm run mobile:sync -w @splash/client",
     "mobile:android": "npm run mobile:android -w @splash/client",
     "mobile:ios": "npm run mobile:ios -w @splash/client",
-    "smoke": "node scripts/smoke-api.mjs"
+    "smoke": "node scripts/smoke-api.mjs",
+    "smoke:blocks": "node scripts/smoke-blocks.mjs"
   },
   "devDependencies": {
     "concurrently": "^10.0.5",
