@@ -1,5 +1,3 @@
-just make something.
+Create instead of consume, connect rather than compare.
 
-base product generated, but of course i'm going to tweak a lot of things and study the architecture, system, etc...
-
-CS is a weird job now.
+Base product generated, but I've been spending a lot of time studying architecture, system, etc...due diligence as a cs student.
