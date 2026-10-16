@@ -8,6 +8,7 @@ import { api, errorMessage } from "../lib/api";
 import { useAuth, useMeStrict } from "../lib/auth";
 import { qk, useNeighborhood } from "../lib/queries";
 import { useToast } from "../lib/toast";
+import { BlockedCard } from "../components/BlockedCard";
 
 export function Settings() {
   const me = useMeStrict();
@@ -138,6 +139,8 @@ export function Settings() {
           {canMove ? "Move to a new neighborhood" : `You can move again on ${nextMove!.toLocaleDateString()}`}
         </button>
       </div>
+
+      <BlockedCard />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { Neighborhood } from "../models/Neighborhood";
 import type { UserDoc } from "../models/User";
 import { loadUsers, userOrPlaceholder } from "../serialize";
 import { isNeighbor } from "../services/access";
+import { hiddenObjectIds, isBlockedBetween } from "../services/blocks";
 
 export const messagesRouter = Router();
 
@@ -28,6 +29,8 @@ async function checkChannel(user: UserDoc, channel: string, forWrite: boolean): 
     const me = user.id as string;
     if (me !== a && me !== b) throw forbidden();
     const otherId = me === a ? b : a;
+    // A block hides the whole conversation from both people (404, so it doesn't reveal who blocked whom).
+    if (await isBlockedBetween(user._id, otherId)) throw notFound("Unknown conversation.");
     // Old conversations stay readable after someone moves; new messages need a current neighbor.
     if (forWrite && !(await isNeighbor(user, otherId))) throw forbidden("You can only message your current neighbors.");
     return { kind: "direct", otherId };
@@ -50,10 +53,14 @@ async function toMessageDTOs(messages: MessageDoc[]): Promise<MessageDTO[]> {
 export async function listThreads(user: UserDoc): Promise<ThreadSummary[]> {
   const me = user.id as string;
   const porch = user.neighborhoodId ? neighborhoodChannel(user.neighborhoodId.toString()) : null;
+  const hidden = await hiddenObjectIds(user);
+  const hiddenIds = new Set(hidden.map(String));
 
   const latest: MessageDoc[] = await Message.aggregate([
     {
       $match: {
+        // Hidden people's porch messages never become the preview or count as unread.
+        authorId: { $nin: hidden },
         $or: [
           ...(porch ? [{ channel: porch }] : []),
           { channel: { $regex: `^dm_(${me}_|[0-9a-f]{24}_${me}$)` } },
@@ -91,6 +98,7 @@ export async function listThreads(user: UserDoc): Promise<ThreadSummary[]> {
   }
   const direct = latest
     .filter((m) => m.channel !== porch)
+    .filter((m) => !m.channel.split("_").slice(1).some((id) => hiddenIds.has(id)))
     .map((m): ThreadSummary => {
       const otherId = m.channel.split("_").slice(1).find((id) => id !== me)!;
       const other = userOrPlaceholder(others, otherId);
@@ -109,7 +117,8 @@ messagesRouter.get("/:channel", async (req, res) => {
   const user = currentUser(req);
   const channel = String(req.params.channel);
   await checkChannel(user, channel, false);
-  const filter: Record<string, unknown> = { channel };
+  // On the porch (a shared room), messages from people hidden by a block are filtered out.
+  const filter: Record<string, unknown> = { channel, authorId: { $nin: await hiddenObjectIds(user) } };
   if (typeof req.query.after === "string" && req.query.after) {
     const after = new Date(req.query.after);
     if (Number.isNaN(after.getTime())) throw badRequest("Bad `after` date.");
