@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
-import { MOVE_COOLDOWN_DAYS, type Avatar, type Me, type NeighborhoodDTO, type UpdateMeBody } from "@splash/shared";
+import { MOVE_COOLDOWN_DAYS, type AuthResponse, type Avatar, type Me, type NeighborhoodDTO, type UpdateMeBody } from "@splash/shared";
+import { DevicesCard } from "../components/DevicesCard";
 import { AvatarPicker, InterestPicker } from "../components/Pickers";
 import { api, errorMessage } from "../lib/api";
 import { useAuth, useMeStrict } from "../lib/auth";
@@ -12,7 +13,7 @@ import { BlockedCard } from "../components/BlockedCard";
 
 export function Settings() {
   const me = useMeStrict();
-  const { logout } = useAuth();
+  const { logout, adoptSession } = useAuth();
   const qc = useQueryClient();
   const toast = useToast();
   const { data: hood } = useNeighborhood();
@@ -35,11 +36,14 @@ export function Settings() {
   });
 
   const changePassword = useMutation({
-    mutationFn: () => api("/api/me/password", { method: "POST", body: { current, next } }),
-    onSuccess: () => {
+    mutationFn: () => api<AuthResponse>("/api/me/password", { method: "POST", body: { current, next } }),
+    onSuccess: (session) => {
+      // The server signed out every device and started a new session for this one.
+      adoptSession(session);
+      void qc.invalidateQueries({ queryKey: ["sessions"] });
       setCurrent("");
       setNext("");
-      toast("Password changed.");
+      toast("Password changed. Other devices were signed out.");
     },
     onError: (e) => toast(errorMessage(e), "error"),
   });
@@ -74,7 +78,7 @@ export function Settings() {
             <Link to={`/u/${me.username}`}>See your shelf</Link>
           </p>
         </div>
-        <button className="btn btn-sm" onClick={logout}>
+        <button className="btn btn-sm" onClick={() => void logout()}>
           <LogOut size={16} /> Sign out
         </button>
       </div>
@@ -128,6 +132,8 @@ export function Settings() {
           Change password
         </button>
       </form>
+
+      <DevicesCard />
 
       <div className="card stack">
         <h2>Neighborhood</h2>

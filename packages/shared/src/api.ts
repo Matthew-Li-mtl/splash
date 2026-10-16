@@ -23,9 +23,25 @@ export interface Me extends PublicUser {
   lastMovedAt: string | null;
 }
 
+/**
+ * Returned by register, login and refresh. The access token is short-lived and
+ * kept in memory by the client; the refresh token travels in an httpOnly cookie.
+ */
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
+  /** Seconds until the access token expires. */
+  expiresIn: number;
   user: Me;
+}
+
+/** One signed-in device, for the "Signed-in devices" list in settings. */
+export interface SessionDTO {
+  id: string;
+  device: string;
+  lastUsedAt: string;
+  createdAt: string;
+  /** True for the device making the request. */
+  current: boolean;
 }
 
 export interface RegisterBody {

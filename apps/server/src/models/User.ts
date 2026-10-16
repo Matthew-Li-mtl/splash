@@ -13,6 +13,8 @@ const userSchema = new Schema(
     interests: { type: [String], default: [] },
     neighborhoodId: { type: Schema.Types.ObjectId, ref: "Neighborhood", default: null, index: true },
     lastMovedAt: { type: Date, default: null },
+    /** Bumped to instantly invalidate every access token (password change, "sign out everywhere"). */
+    tokenVersion: { type: Number, default: 0 },
     /** channel id → when this user last read it. */
     readMarkers: { type: Map, of: Date, default: () => new Map() },
   },
