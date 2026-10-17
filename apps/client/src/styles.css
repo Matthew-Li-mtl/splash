@@ -667,6 +667,40 @@ button.card:hover {
   text-decoration: none;
 }
 
+/* ---------- Small dropdown menu (e.g. the ⋯ on your own posts) ---------- */
+
+.menu-wrap {
+  align-self: flex-start;
+}
+
+/* top/right are set inline from the button's position. */
+.menu {
+  position: fixed;
+  z-index: 20;
+  min-width: 150px;
+  padding: 6px;
+  display: grid;
+  box-shadow: var(--shadow-lift);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--bg-2);
+}
+
 .post-kind {
   display: inline-flex;
   align-items: center;

@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
-import { REACTIONS, type CommentDTO, type PostPage } from "@splash/shared";
+import { REACTIONS, type CollageContent, type CollageElement, type CommentDTO, type PostPage } from "@splash/shared";
 import { badRequest, currentUser, forbidden, notFound, objectId } from "../http";
+import { Asset } from "../models/Asset";
 import { Comment } from "../models/Comment";
 import { Post } from "../models/Post";
 import type { UserDoc } from "../models/User";
@@ -103,8 +104,20 @@ postsRouter.delete("/:id", async (req, res) => {
   const post = await findViewablePost(user, req.params.id);
   if (!post.authorId.equals(user._id)) throw forbidden("Only the author can delete this.");
   await Promise.all([post.deleteOne(), Comment.deleteMany({ postId: post._id })]);
+  await freeUnusedPhotos(post.kind === "collage" ? (post.content as CollageContent).elements : []);
   res.status(204).end();
 });
+
+/**
+ * Delete a removed collage's photos so they stop counting against the owner's quota.
+ * Remixes reuse the original's asset ids, so a photo another post still shows is kept.
+ */
+async function freeUnusedPhotos(elements: CollageElement[]) {
+  const assetIds = [...new Set(elements.flatMap((e) => (e.type === "image" ? [e.assetId] : [])))];
+  for (const id of assetIds) {
+    if (!(await Post.exists({ kind: "collage", "content.elements.assetId": id }))) await Asset.deleteOne({ _id: id });
+  }
+}
 
 const reactionSchema = z.object({ emoji: z.enum(REACTIONS) });
 
