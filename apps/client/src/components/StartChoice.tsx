@@ -6,17 +6,17 @@ const OPTIONS: { mode: StartChoiceValue["mode"]; title: string; body: string; qu
   {
     mode: "solo",
     title: "Just me for now",
-    body: "A street of your own. Make things for yourself, and invite people you know whenever you like.",
+    body: "Make a space for yourself! You can still invite people later if you'd like.",
   },
   {
     mode: "invite",
     title: "I have an invite",
-    body: "Move in next to a friend. No awkward introductions: you already know each other.",
-  },
+    body: "Move in with your friends!",
+  }
   {
     mode: "match",
     title: "Match me with strangers",
-    body: "Only if you don't know anyone here yet. You'll join an open street with people who like similar things.",
+    body: "I don't know anyone who uses this app, but I'm willing to meet new people!",
     quiet: true,
   },
 ];
