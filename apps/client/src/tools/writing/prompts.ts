@@ -1,13 +1,82 @@
-import { seededRandom, todayKey } from "../../lib/util";
+import { seededRandom, shuffle, todayKey } from "../../lib/util";
 
 export interface Prompt {
   text: string;
-  category: "memory" | "imagine" | "notice" | "reflect" | "poem" | "story";
+  /** "opinion" prompts (tier lists, would-you-rathers, hot takes) are the daily prompt. */
+  category: "opinion" | "fun" | "memory" | "imagine" | "notice" | "reflect" | "poem" | "story";
 }
 
 const p = (category: Prompt["category"], ...texts: string[]): Prompt[] => texts.map((text) => ({ text, category }));
 
 export const PROMPTS: Prompt[] = [
+  // Opinions are easy to answer and fun to compare, which is what makes a good daily prompt.
+  // Keep each one answerable in a few lines; the daily rotation walks this list in a shuffled order.
+  ...p(
+    "opinion",
+    // Tier lists
+    "Make a tier list of breakfast foods. S tier to F tier, and defend your S.",
+    "Make a tier list of the seasons. Explain your bottom pick.",
+    "Make a tier list of pizza toppings. Pineapple goes where?",
+    "Make a tier list of ways to spend a rainy day.",
+    "Make a tier list of kitchen utensils, ranked by how much they carry the team.",
+    "Make a tier list of board games or card games you've played.",
+    "Make a tier list of holidays, ranked purely on vibes.",
+    "Make a tier list of snacks you'd bring on a road trip.",
+    "Make a tier list of chores, from \"honestly relaxing\" to \"never again\".",
+    "Make a tier list of the apps on your home screen.",
+    "Make a tier list of potato forms: fries, mashed, chips, hash browns and more.",
+    "Make a tier list of the places you've lived or the rooms in your home.",
+    "Make a tier list of drinks you'd order at a café.",
+    "Make a tier list of animals you'd want as a sidekick.",
+    // Would you rather
+    "Would you rather live in a treehouse or a houseboat? Make your case.",
+    "Would you rather be able to talk to animals or speak every human language?",
+    "Would you rather only eat breakfast food or only eat dessert, forever?",
+    "Would you rather always be ten minutes early or always be ten minutes late?",
+    "Would you rather have a rewind button or a pause button for your life?",
+    "Would you rather explore the deep ocean or outer space?",
+    "Would you rather have no internet for a month or no music for a month?",
+    "Would you rather live 100 years in the past or 100 years in the future?",
+    "Would you rather have a personal chef or a personal chauffeur?",
+    "Would you rather know how every movie ends, or never be able to finish one?",
+    "Would you rather be famous in your town or unknown everywhere?",
+    // Underrated / overrated
+    "What's an underrated snack that deserves more love?",
+    "What's an underrated movie or show you'd recommend to anyone?",
+    "What's an underrated household item that makes your life better?",
+    "What's an underrated way to spend a Saturday?",
+    "What's an underrated song that should have been a hit?",
+    "What's an underrated small pleasure most people overlook?",
+    "What's something everyone loves that you think is overrated? Be honest.",
+    "What's an underrated skill everyone should learn?",
+    // Hot takes and rankings
+    "What's your most harmless hot take? Defend it.",
+    "Rank the five senses from most to least essential.",
+    "What's the best smell in the world, and why is it obviously that one?",
+    "Is a hot dog a sandwich? Settle it once and for all.",
+    "What's the perfect number of pillows? Show your reasoning.",
+    "Name the best decade for music and argue for it.",
+    "What's the correct way to eat an Oreo, and why are the others wrong?",
+    "Which is better: sunrise or sunset? Pick a side.",
+    "What's the most useful thing you own that cost under $10?",
+    "What's the ideal temperature for a perfect day? Exact numbers only.",
+    "Cats or dogs? Then name the one exception to your answer.",
+  ),
+  ...p(
+    "fun",
+    "Write the terms and conditions for being your friend.",
+    "Describe your morning as a nature documentary narrator.",
+    "Write a one-star review of something you secretly love.",
+    "Invent a holiday. What do people eat, wear and do?",
+    "Write a motivational speech for a houseplant that won't grow.",
+    "Your autobiography's chapter titles. Just the titles.",
+    "Write a horoscope for your neighborhood this week.",
+    "Explain your job, or your day, using only words a five-year-old knows.",
+    "Write a wanted poster for the sock thief in your laundry.",
+    "Design the perfect sandwich, ingredient by ingredient.",
+    "Write the patch notes for the latest version of yourself.",
+    "Plan a heist where the treasure is the last slice of cake.",
+  ),
   ...p(
     "memory",
     "Describe the kitchen you grew up in, using all five senses.",
@@ -86,11 +155,23 @@ export const PROMPTS: Prompt[] = [
   ),
 ];
 
-/** Same prompt for everyone on the same day, so neighbors can compare takes. */
+const OPINIONS = PROMPTS.filter((pr) => pr.category === "opinion");
+/** A fixed shuffle (same seed for everyone), so the daily order feels random but is shared. */
+const DAILY_ORDER = shuffle(OPINIONS, seededRandom("daily-opinions"));
+
+/**
+ * Today's prompt: always an opinion prompt, and the same for everyone on the same day so
+ * neighbors can compare takes. Walking a shuffled list by day number (instead of picking at
+ * random each day) means no repeats until every opinion prompt has had its day.
+ */
 export function dailyPrompt(date = new Date()): Prompt {
-  const rand = seededRandom(`prompt-${todayKey(date)}`);
-  return PROMPTS[Math.floor(rand() * PROMPTS.length)];
+  const [y, m, d] = todayKey(date).split("-").map(Number);
+  const dayNumber = Math.floor(Date.UTC(y, m - 1, d) / 86_400_000);
+  return DAILY_ORDER[dayNumber % DAILY_ORDER.length];
 }
+
+/** Tier-list prompts get a S-to-F skeleton as the writing box's placeholder. */
+export const isTierList = (text: string) => /^make a tier list/i.test(text);
 
 export function randomPrompt(except?: string): Prompt {
   let prompt: Prompt;

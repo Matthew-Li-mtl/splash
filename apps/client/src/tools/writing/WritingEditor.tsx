@@ -10,7 +10,7 @@ import { TOOLS } from "../registry";
 import { ToolHeader } from "../ToolHeader";
 import { useEditorSource, type EditorSource } from "../useEditorSource";
 import { ACROSTIC_WORDS, CHALLENGES, words } from "./challenges";
-import { dailyPrompt, randomPrompt } from "./prompts";
+import { dailyPrompt, isTierList, randomPrompt } from "./prompts";
 import "./writing.css";
 
 type Mode = "prompt" | "challenge" | "free";
@@ -205,7 +205,13 @@ function Editor({ source }: { source: EditorSource<"writing"> }) {
           className="paper-text"
           value={draft.text}
           onChange={(e) => update({ text: e.target.value })}
-          placeholder={draft.mode === "challenge" && challenge.id === "haiku" ? "An old silent pond…" : "start here..."}
+          placeholder={
+            draft.mode === "challenge" && challenge.id === "haiku"
+              ? "An old silent pond…"
+              : draft.mode === "prompt" && isTierList(draft.prompt)
+                ? "S: \nA: \nB: \nC: \nF: "
+                : "start here..."
+          }
           aria-label="Your writing"
           spellCheck
           autoFocus={!source.post}
