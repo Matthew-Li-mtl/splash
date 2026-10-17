@@ -134,7 +134,7 @@ function Sudoku({ seed, difficulty, daily }: { seed: string; difficulty: Difficu
       <ToolHeader
         tool={{ ...TOOLS.puzzle, color: "var(--c-puzzle)" }}
         title={daily ? "Daily sudoku" : "Sudoku"}
-        subtitle={`${difficulty[0].toUpperCase()}${difficulty.slice(1)}${daily ? " · same puzzle for your whole street" : ""}`}
+        subtitle={`${difficulty[0].toUpperCase()}${difficulty.slice(1)}${daily ? "" : ""}`}
       >
         <span className="bold" style={{ fontVariantNumeric: "tabular-nums" }} aria-label="Time">
           {formatDuration(progress.done ? progress.elapsed : elapsed)}

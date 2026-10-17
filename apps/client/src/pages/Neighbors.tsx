@@ -24,7 +24,7 @@ export function Neighbors() {
         <div>
           <h1>{name}</h1>
           <p>
-            {members.length} of {capacity} homes filled. Same people, every day. That's the point.
+            {members.length} of {capacity} homes filled.
           </p>
         </div>
       </div>
@@ -57,7 +57,6 @@ export function Neighbors() {
           <div key={i} className="card neighbor empty-lot">
             <span style={{ fontSize: "2rem" }}>🪧</span>
             <span className="small bold">Empty lot</span>
-            <span className="tiny">Someone new may move in soon</span>
           </div>
         ))}
       </div>

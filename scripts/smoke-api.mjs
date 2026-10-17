@@ -23,7 +23,7 @@ const suffix = Date.now().toString(36).slice(-5);
 const reg = (name, interests, inviteCode) =>
   call("/api/auth/register", {
     method: "POST",
-    body: { username: `${name}_${suffix}`, displayName: name, password: "password123", avatar: { emoji: "🦊", color: "#f4a261" }, interests, inviteCode },
+    body: { username: `${name}_${suffix}`, displayName: name, password: "password123", interests, inviteCode },
   });
 
 const health = await call("/api/health");
@@ -38,7 +38,7 @@ const A = a.data.token, B = b.data.token, C = c.data.token;
 
 const dup = await reg("alice", []);
 check(dup.status === 409, "duplicate username rejected");
-const badPw = await call("/api/auth/register", { method: "POST", body: { username: "zz_" + suffix, displayName: "z", password: "short", avatar: { emoji: "x", color: "#ffffff" } } });
+const badPw = await call("/api/auth/register", { method: "POST", body: { username: "zz_" + suffix, displayName: "z", password: "short" } });
 check(badPw.status === 400 && /8 characters/.test(badPw.data.error), "short password rejected: " + badPw.data?.error);
 
 const login = await call("/api/auth/login", { method: "POST", body: { username: `ALICE_${suffix}`, password: "password123" } });

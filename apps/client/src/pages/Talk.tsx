@@ -19,7 +19,6 @@ export function Talk() {
       <div className="page-head">
         <div>
           <h1>Talk</h1>
-          <p>The porch is for everyone on your street. Or message one neighbor.</p>
         </div>
       </div>
 
@@ -46,7 +45,7 @@ export function Talk() {
                 <div className={`small preview ${t.unread ? "bold" : "muted"}`}>
                   {t.lastMessage
                     ? `${t.lastMessage.author.id === me.id ? "You" : t.lastMessage.author.displayName}: ${t.lastMessage.text}`
-                    : "Nobody's said anything yet. Start the conversation!"}
+                    : ""}
                 </div>
               </div>
               {t.unread && <span className="unread-dot" aria-label="Unread" />}
@@ -57,7 +56,7 @@ export function Talk() {
 
       {notYet.length > 0 && (
         <section className="stack">
-          <h2 className="section-title">Say hi to someone new</h2>
+          <h2 className="section-title">Or...say hi to someone new!</h2>
           <div className="chips">
             {notYet.map((n) => (
               <Link key={n.id} to={`/talk/${directChannel(me.id, n.id)}`} className="chip" style={{ textDecoration: "none" }}>

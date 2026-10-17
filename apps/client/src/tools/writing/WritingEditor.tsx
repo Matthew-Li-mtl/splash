@@ -186,7 +186,7 @@ function Editor({ source }: { source: EditorSource<"writing"> }) {
                 {challenge.needsWord && (
                   <>
                     {" "}
-                    Spell <span className="acrostic-word">{draft.acrosticWord}</span>{" "}
+                    <span className="acrostic-word">{draft.acrosticWord}</span>{" "}
                     <button className="btn btn-ghost btn-icon btn-sm" style={{ verticalAlign: "middle" }} onClick={() => update({ acrosticWord: pickWord() })} aria-label="Different word">
                       <Dices size={16} />
                     </button>
@@ -205,7 +205,7 @@ function Editor({ source }: { source: EditorSource<"writing"> }) {
           className="paper-text"
           value={draft.text}
           onChange={(e) => update({ text: e.target.value })}
-          placeholder={draft.mode === "challenge" && challenge.id === "haiku" ? "An old silent pond…" : "Just start. You can't do this wrong."}
+          placeholder={draft.mode === "challenge" && challenge.id === "haiku" ? "An old silent pond…" : "start here..."}
           aria-label="Your writing"
           spellCheck
           autoFocus={!source.post}

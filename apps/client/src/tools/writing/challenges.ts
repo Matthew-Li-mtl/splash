@@ -43,14 +43,14 @@ export const CHALLENGES: Challenge[] = [
     id: "six",
     label: "Six-word story",
     emoji: "6️⃣",
-    description: "Tell a whole story in exactly six words.",
+    description: "",
     check: exactWords(6),
   },
   {
     id: "fifty",
     label: "Fifty words",
     emoji: "🖐️",
-    description: "A complete story in exactly 50 words. Not 49, not 51.",
+    description: "",
     check: exactWords(50),
   },
   {
@@ -64,19 +64,27 @@ export const CHALLENGES: Challenge[] = [
     id: "haiku",
     label: "Haiku",
     emoji: "🍃",
-    description: "Three lines: five syllables, then seven, then five.",
+    description: "Five syllables, then seven, then five.",
     check(text) {
       const counts = lines(text).map((l) => words(l).reduce((sum, w) => sum + syllables(w), 0));
       const met = counts.length === 3 && counts[0] === 5 && counts[1] === 7 && counts[2] === 5;
       const shown = counts.length ? counts.join(" · ") : "0";
-      return { met, status: met ? "5 · 7 · 5. Lovely!" : `Syllables: ${shown} (aim for 5 · 7 · 5)` };
+      return { met, status: met ? `Syllables: ${shown}` : `Syllables: ${shown}` };
     },
+    /*
+    check(text) {
+      const counts = lines(text).map((l) => words(l).reduce((sum, w) => sum + syllables(w), 0));
+      const met = counts.length === 3 && counts[0] === 5 && counts[1] === 7 && counts[2] === 5;
+      const shown = counts.length ? counts.join(" · ") : "0";
+      return { met, status: met ? "Valid haiku" : `Syllables: ${shown} (aim for 5 · 7 · 5)` };
+    },
+    */
   },
   {
     id: "noE",
     label: "No letter E",
     emoji: "🚫",
-    description: "Write at least 30 words without using the letter E. Harder than it sounds!",
+    description: "Write at least 30 words without using the letter E.",
     check(text) {
       const es = (text.match(/e/gi) ?? []).length;
       const n = words(text).length;
@@ -88,7 +96,7 @@ export const CHALLENGES: Challenge[] = [
     id: "acrostic",
     label: "Acrostic",
     emoji: "🔠",
-    description: "The first letter of each line spells a word.",
+    description: "The first letter of each line should spell",
     needsWord: true,
     check(text, word = "HOME") {
       const firsts = lines(text).map((l) => l.replace(/^[^\p{L}]+/u, "")[0]?.toUpperCase() ?? "");
@@ -104,7 +112,7 @@ export const CHALLENGES: Challenge[] = [
     id: "oneSentence",
     label: "One long sentence",
     emoji: "🌊",
-    description: "At least 40 words, all in a single sentence. Let it run on.",
+    description: "At least 40 words, all in one sentence.",
     check(text) {
       const n = words(text).length;
       const breaks = (text.trim().replace(/[.!?…"”')\s]+$/, "").match(/[.!?](\s|$)/g) ?? []).length;

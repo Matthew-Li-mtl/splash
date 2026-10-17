@@ -2,12 +2,13 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import type { Badges } from "@splash/shared";
-import { HttpError, currentUser } from "../http";
+import { HttpError, badRequest, currentUser } from "../http";
+import { Asset } from "../models/Asset";
 import { Game } from "../models/Game";
 import { toMe } from "../serialize";
 import { updateInterestCounts } from "../services/neighborhoods";
 import { listThreads } from "./messages";
-import { avatarSchema, interestsSchema } from "../validation";
+import { interestsSchema } from "../validation";
 
 export const meRouter = Router();
 
@@ -18,7 +19,8 @@ meRouter.get("/", (req, res) => {
 const updateSchema = z.object({
   displayName: z.string().trim().min(1).max(40).optional(),
   bio: z.string().trim().max(280).optional(),
-  avatar: avatarSchema.optional(),
+  /** An asset id from POST /api/assets, or null to go back to initials. */
+  photoId: z.string().max(64).nullable().optional(),
   interests: interestsSchema.optional(),
 });
 
@@ -31,7 +33,12 @@ meRouter.patch("/", async (req, res) => {
   }
   if (body.displayName !== undefined) user.displayName = body.displayName;
   if (body.bio !== undefined) user.bio = body.bio;
-  if (body.avatar) user.avatar = body.avatar;
+  if (body.photoId !== undefined && body.photoId !== user.photoId) {
+    if (body.photoId && !(await Asset.exists({ _id: body.photoId, ownerId: user._id }))) throw badRequest("Upload the photo first.");
+    // The old photo only ever served as this avatar, so free its space.
+    if (user.photoId) await Asset.deleteOne({ _id: user.photoId, ownerId: user._id });
+    user.photoId = body.photoId;
+  }
   await user.save();
   res.json(toMe(user));
 });

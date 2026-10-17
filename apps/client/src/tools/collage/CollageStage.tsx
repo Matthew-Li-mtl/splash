@@ -1,8 +1,8 @@
-import { useRef, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { COLLAGE_HEIGHT, COLLAGE_WIDTH, type CollageContent, type CollageElement } from "@splash/shared";
 import { assetUrl } from "../../lib/api";
 import { useElementWidth } from "../../lib/util";
-import { BACKGROUNDS, FONTS } from "./palette";
+import { BACKGROUNDS, FONTS, stickerUrl } from "./palette";
 import "./collage.css";
 
 /** What an element looks like, independent of where it sits. */
@@ -31,11 +31,7 @@ function ElementVisual({ el }: { el: CollageElement }) {
         </div>
       );
     case "sticker":
-      return (
-        <div className="c-sticker" style={{ fontSize: el.w * el.scale * 0.82 }}>
-          {el.emoji}
-        </div>
-      );
+      return <Sticker key={el.emoji} emoji={el.emoji} size={el.w * el.scale} />;
     case "shape":
       if (el.shape === "heart") {
         return (
@@ -52,6 +48,16 @@ function ElementVisual({ el }: { el: CollageElement }) {
         </svg>
       );
   }
+}
+
+/** Google-style artwork, falling back to the device's own emoji if there's no image for it. */
+function Sticker({ emoji, size }: { emoji: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="c-sticker" style={{ fontSize: size * 0.82 }}>
+      {failed ? emoji : <img src={stickerUrl(emoji)} alt={emoji} draggable={false} onError={() => setFailed(true)} />}
+    </div>
+  );
 }
 
 export interface StageHandlers {

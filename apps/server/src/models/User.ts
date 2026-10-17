@@ -5,10 +5,8 @@ const userSchema = new Schema(
     username: { type: String, required: true, unique: true, lowercase: true, trim: true },
     displayName: { type: String, required: true, trim: true, maxlength: 40 },
     passwordHash: { type: String, required: true },
-    avatar: {
-      emoji: { type: String, default: "🦊" },
-      color: { type: String, default: "#f4a261" },
-    },
+    /** Asset id of an uploaded profile photo. */
+    photoId: { type: String, default: null },
     bio: { type: String, default: "", maxlength: 280 },
     interests: { type: [String], default: [] },
     neighborhoodId: { type: Schema.Types.ObjectId, ref: "Neighborhood", default: null, index: true },

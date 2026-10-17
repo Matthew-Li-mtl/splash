@@ -87,7 +87,7 @@
   height: var(--cell);
   flex: none;
   border-radius: 7px;
-  background: var(--bg-2);
+  background: #aaa;
   cursor: pointer;
   transition:
     transform 0.08s,
@@ -116,7 +116,7 @@
 }
 
 .song-cell.on {
-  background: var(--note);
+  background: #fff;
   box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.15);
 }
 

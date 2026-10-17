@@ -1,19 +1,19 @@
 /* Splash design system: warm paper, soft ink, one accent color per tool. */
 
 :root {
-  --bg: #fbf6ee;
-  --bg-2: #f3eadc;
-  --card: #fffdf9;
-  --ink: #2d2620;
-  --ink-2: #5c5249;
-  --muted: #8a7f74;
-  --line: #e8ddcc;
-  --line-2: #d9cbb6;
-  --accent: #e07a5f;
-  --accent-ink: #b0513a;
-  --accent-soft: #fbe3da;
-  --danger: #c4483b;
-  --success: #4f8a65;
+  --bg: #000008;
+  --bg-2: #000010;
+  --card: #040020;
+  --ink: #00ddff;
+  --ink-2: #00aaff;
+  --muted: #C77DFF;
+  --line: #e4ccf1;
+  --line-2: #c9b2d6;
+  --accent: #7B2CBF;
+  --accent-ink: rgb(138, 78, 197);
+  --accent-soft: #C77DFF;
+  --danger: #D00000;
+  --success: #00D000;
 
   --c-write: #e07a5f;
   --c-collage: #e2a93b;
@@ -622,9 +622,17 @@ button.card:hover {
   place-items: center;
   flex: none;
   border-radius: 50%;
+  overflow: hidden;
   line-height: 1;
+  font-weight: 600;
   user-select: none;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.45);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .avatar-stack {

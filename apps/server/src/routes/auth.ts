@@ -9,7 +9,7 @@ import { Neighborhood } from "../models/Neighborhood";
 import { User } from "../models/User";
 import { toMe } from "../serialize";
 import { assignNeighborhood } from "../services/neighborhoods";
-import { avatarSchema, interestsSchema } from "../validation";
+import { interestsSchema } from "../validation";
 
 export const authRouter = Router();
 
@@ -25,7 +25,6 @@ const registerSchema = z.object({
   username: usernameSchema,
   displayName: z.string().trim().min(1, "What should neighbors call you?").max(40),
   password: z.string().min(8, "Passwords need at least 8 characters.").max(200),
-  avatar: avatarSchema,
   interests: interestsSchema.default([]),
   inviteCode: z.string().trim().max(32).optional(),
 });
@@ -47,7 +46,6 @@ authRouter.post("/register", async (req, res) => {
     username: body.username,
     displayName: body.displayName,
     passwordHash: await bcrypt.hash(body.password, 10),
-    avatar: body.avatar,
     interests: body.interests,
   });
   try {

@@ -1,4 +1,6 @@
-import { AVATAR_COLORS, AVATAR_EMOJIS, INTERESTS, type Avatar as AvatarValue } from "@splash/shared";
+import { useRef } from "react";
+import { Camera } from "lucide-react";
+import { INTERESTS } from "@splash/shared";
 import { Avatar } from "./Avatar";
 
 export function InterestPicker({ value, onChange, max = 10 }: { value: string[]; onChange: (v: string[]) => void; max?: number }) {
@@ -15,32 +17,47 @@ export function InterestPicker({ value, onChange, max = 10 }: { value: string[];
   );
 }
 
-export function AvatarPicker({ value, onChange, name }: { value: AvatarValue; onChange: (v: AvatarValue) => void; name: string }) {
+/** Profile photo with upload/remove buttons. Without a photo it shows the initials avatar. */
+export function PhotoPicker({
+  src,
+  name,
+  username,
+  busy = false,
+  onPick,
+  onRemove,
+}: {
+  src: string | null;
+  name: string;
+  username: string;
+  busy?: boolean;
+  onPick: (file: File) => void;
+  onRemove: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="stack">
-      <div className="row" style={{ gap: 14 }}>
-        <Avatar user={{ avatar: value, displayName: name || "You", username: "" }} size={64} />
-        <div className="swatches" role="group" aria-label="Avatar color">
-          {AVATAR_COLORS.map((color) => (
-            <button
-              key={color}
-              type="button"
-              className="swatch"
-              style={{ background: color }}
-              aria-pressed={value.color === color}
-              aria-label={`Color ${color}`}
-              onClick={() => onChange({ ...value, color })}
-            />
-          ))}
-        </div>
-      </div>
-      <div className="picker-grid" role="group" aria-label="Avatar emoji">
-        {AVATAR_EMOJIS.map((emoji) => (
-          <button key={emoji} type="button" aria-pressed={value.emoji === emoji} onClick={() => onChange({ ...value, emoji })}>
-            {emoji}
+    <div className="row" style={{ gap: 14 }}>
+      <Avatar user={{ photoId: null, displayName: name || "You", username }} src={src} size={72} />
+      <div className="row row-wrap" style={{ gap: 6 }}>
+        <button type="button" className="btn btn-sm" disabled={busy} onClick={() => fileRef.current?.click()}>
+          <Camera size={16} /> {busy ? "Uploading…" : src ? "Change photo" : "Add a photo"}
+        </button>
+        {src && !busy && (
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onRemove}>
+            Remove
           </button>
-        ))}
+        )}
       </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file) onPick(file);
+        }}
+      />
     </div>
   );
 }

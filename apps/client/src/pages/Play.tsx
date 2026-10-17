@@ -58,7 +58,7 @@ export function Play() {
       <div className="page-head">
         <div>
           <h1>Play</h1>
-          <p>Puzzles for quiet moments, games for you and a neighbor.</p>
+          <p>More puzzles to come soon!</p>
         </div>
       </div>
 
@@ -68,13 +68,13 @@ export function Play() {
           <div className="tile" style={{ "--tile": "var(--c-puzzle)", minHeight: 0 } as CSSProperties}>
             <span className="tile-icon">☀️</span>
             <h3>Daily sudoku</h3>
-            <p>Same puzzle for your whole street today. Compare times!</p>
+            <p>Compete with the hood or just chill.</p>
             <Link to="/play/sudoku?daily=1" className="btn btn-sm btn-primary" style={{ alignSelf: "flex-start", marginTop: 4 }}>
-              Play today's
+              Play
             </Link>
           </div>
-          <PuzzleTile to="/play/sudoku" title="Sudoku" blurb="Fill the grid so every row, column and box has 1–9." color="var(--c-puzzle)" icon={<Grid3x3 size={24} />} />
-          <PuzzleTile to="/play/minesweeper" title="Minesweeper" blurb="Clear the field. Numbers tell you how many mines are nearby." color="var(--c-write)" icon={<Bomb size={24} />} />
+          <PuzzleTile to="/play/sudoku" title="Sudoku" blurb="" color="var(--c-puzzle)" icon={<Grid3x3 size={24} />} />
+          <PuzzleTile to="/play/minesweeper" title="Minesweeper" blurb="" color="var(--c-write)" icon={<Bomb size={24} />} />
         </div>
       </section>
 
@@ -90,7 +90,7 @@ export function Play() {
         ) : active.length === 0 && finished.length === 0 ? (
           <div className="card">
             <EmptyState emoji="🎲" title="No games yet">
-              <p className="muted">Four in a Row, Dots & Boxes, Mancala. Take turns whenever you like, no rush.</p>
+              <p className="muted">Four in a row, dots & boxes, mancala. (no time limit)</p>
               <button className="btn btn-sm" onClick={() => setStarting(true)}>
                 Challenge a neighbor
               </button>

@@ -3,16 +3,12 @@
 import type { PostContentMap, PostKind } from "./content";
 import type { BaseGameState, GameType, Player } from "./games";
 
-export interface Avatar {
-  emoji: string;
-  color: string;
-}
-
 export interface PublicUser {
   id: string;
   username: string;
   displayName: string;
-  avatar: Avatar;
+  /** Uploaded profile photo (an asset id). Without one, people see their initial on a color. */
+  photoId: string | null;
   bio: string;
   interests: string[];
   createdAt: string;
@@ -32,7 +28,6 @@ export interface RegisterBody {
   username: string;
   displayName: string;
   password: string;
-  avatar: Avatar;
   interests: string[];
   inviteCode?: string;
 }
@@ -42,7 +37,7 @@ export interface LoginBody {
   password: string;
 }
 
-export type UpdateMeBody = Partial<Pick<PublicUser, "displayName" | "bio" | "avatar" | "interests">>;
+export type UpdateMeBody = Partial<Pick<PublicUser, "displayName" | "bio" | "photoId" | "interests">>;
 
 export interface NeighborhoodDTO {
   id: string;

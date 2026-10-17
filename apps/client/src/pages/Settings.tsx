@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
-import { MOVE_COOLDOWN_DAYS, type Avatar, type Me, type NeighborhoodDTO, type UpdateMeBody } from "@splash/shared";
-import { AvatarPicker, InterestPicker } from "../components/Pickers";
-import { api, errorMessage } from "../lib/api";
+import { MOVE_COOLDOWN_DAYS, type Me, type NeighborhoodDTO, type UpdateMeBody } from "@splash/shared";
+import { InterestPicker, PhotoPicker } from "../components/Pickers";
+import { api, assetUrl, errorMessage } from "../lib/api";
 import { useAuth, useMeStrict } from "../lib/auth";
+import { PROFILE_PHOTO, uploadImage } from "../lib/image";
 import { qk, useNeighborhood } from "../lib/queries";
 import { useToast } from "../lib/toast";
 
@@ -18,8 +19,8 @@ export function Settings() {
 
   const [displayName, setDisplayName] = useState(me.displayName);
   const [bio, setBio] = useState(me.bio);
-  const [avatar, setAvatar] = useState<Avatar>(me.avatar);
   const [interests, setInterests] = useState(me.interests);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
 
@@ -32,6 +33,21 @@ export function Settings() {
     },
     onError: (e) => toast(errorMessage(e), "error"),
   });
+
+  // Photo changes save right away, separate from the rest of the profile form.
+  const setPhoto = async (file: File | null) => {
+    setPhotoBusy(true);
+    try {
+      const photoId = file ? (await uploadImage(file, PROFILE_PHOTO)).id : null;
+      qc.setQueryData(qk.me, await api<Me>("/api/me", { method: "PATCH", body: { photoId } }));
+      void qc.invalidateQueries({ queryKey: qk.neighborhood });
+      toast(file ? "Looking good!" : "Photo removed.");
+    } catch (e) {
+      toast(errorMessage(e), "error");
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
 
   const changePassword = useMutation({
     mutationFn: () => api("/api/me/password", { method: "POST", body: { current, next } }),
@@ -82,10 +98,21 @@ export function Settings() {
         className="card stack"
         onSubmit={(e) => {
           e.preventDefault();
-          saveProfile.mutate({ displayName, bio, avatar, interests });
+          saveProfile.mutate({ displayName, bio, interests });
         }}
       >
         <h2>Profile</h2>
+        <div className="field">
+          <span className="label">Photo</span>
+          <PhotoPicker
+            src={me.photoId && assetUrl(me.photoId)}
+            name={displayName}
+            username={me.username}
+            busy={photoBusy}
+            onPick={(file) => void setPhoto(file)}
+            onRemove={() => void setPhoto(null)}
+          />
+        </div>
         <label className="field">
           <span className="label">Name</span>
           <input className="input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={40} required />
@@ -94,10 +121,6 @@ export function Settings() {
           <span className="label">A little about you</span>
           <textarea className="textarea" rows={3} value={bio} onChange={(e) => setBio(e.target.value)} maxLength={280} placeholder="Amateur baker, terrible at chess, learning ukulele." />
         </label>
-        <div className="field">
-          <span className="label">Avatar</span>
-          <AvatarPicker value={avatar} onChange={setAvatar} name={displayName} />
-        </div>
         <div className="field">
           <span className="label">Interests</span>
           <InterestPicker value={interests} onChange={setInterests} />

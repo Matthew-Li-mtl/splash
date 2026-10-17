@@ -3,14 +3,14 @@ import type { Me, PostDTO, PublicUser, ReactionSummary } from "@splash/shared";
 import { User, type UserDoc } from "./models/User";
 import { Post, type PostDoc } from "./models/Post";
 
-type UserLike = Pick<UserDoc, "_id" | "username" | "displayName" | "avatar" | "bio" | "interests" | "createdAt">;
+type UserLike = Pick<UserDoc, "_id" | "username" | "displayName" | "photoId" | "bio" | "interests" | "createdAt">;
 
 export function toPublicUser(u: UserLike): PublicUser {
   return {
     id: u._id.toString(),
     username: u.username,
     displayName: u.displayName,
-    avatar: { emoji: u.avatar?.emoji ?? "🦊", color: u.avatar?.color ?? "#f4a261" },
+    photoId: u.photoId ?? null,
     bio: u.bio ?? "",
     interests: u.interests ?? [],
     createdAt: u.createdAt.toISOString(),
@@ -36,7 +36,7 @@ const deletedUser = (id: string): PublicUser => ({
   id,
   username: "former-neighbor",
   displayName: "Former neighbor",
-  avatar: { emoji: "🏚️", color: "#c9ada7" },
+  photoId: null,
   bio: "",
   interests: [],
   createdAt: new Date(0).toISOString(),

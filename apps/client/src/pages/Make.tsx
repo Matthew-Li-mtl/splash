@@ -14,8 +14,7 @@ export function Make() {
     <div className="container-wide stack stack-lg">
       <div className="page-head">
         <div>
-          <h1>Make something</h1>
-          <p>Small is good. Done is better than perfect. Nobody's grading.</p>
+          <h1>Make something...</h1>
         </div>
         <Link to={`/u/${me.username}`} className="btn btn-sm">
           Your shelf

@@ -1,4 +1,5 @@
 import type { ComponentType, CSSProperties } from "react";
+import { initial } from "../components/Avatar";
 import {
   BOXES,
   FOUR_COLS,
@@ -98,7 +99,7 @@ function DotsBoard({ game, canMove, onMove }: BoardProps<DotsState, DotsMove>) {
           <g key={`b${i}`}>
             <rect x={M + (i % BOXES) * S + 8} y={M + Math.floor(i / BOXES) * S + 8} width={S - 16} height={S - 16} rx={10} fill={SEAT_COLORS[owner]} opacity={0.35} />
             <text x={M + (i % BOXES) * S + S / 2} y={M + Math.floor(i / BOXES) * S + S / 2 + 12} textAnchor="middle" fontSize={34} fontWeight={800} fill="#2d2620">
-              {game.players[owner].avatar.emoji}
+              {initial(game.players[owner].displayName)}
             </text>
           </g>
         ),

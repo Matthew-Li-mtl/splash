@@ -12,7 +12,7 @@
   margin: 0 auto;
   padding: 8px;
   border-radius: 14px;
-  background: #ded2bf;
+  background: #001120;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
@@ -24,7 +24,7 @@
   padding: 0;
   border: 0;
   border-radius: 6px;
-  background: linear-gradient(#a8c7a3, #8db48a);
+  background: #002620;
   box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.14);
   font-size: calc(var(--cell) * 0.52);
   font-weight: 900;
@@ -51,7 +51,7 @@
 }
 
 .ms-cell.open {
-  background: #f7f0e3;
+  background: #004640;
   box-shadow: none;
   cursor: default;
 }

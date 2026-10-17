@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useSearchParams } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import { AVATAR_COLORS, AVATAR_EMOJIS, USERNAME_PATTERN, type Avatar } from "@splash/shared";
+import { USERNAME_PATTERN, type Me } from "@splash/shared";
 import { Logo } from "../components/Logo";
-import { AvatarPicker, InterestPicker } from "../components/Pickers";
-import { errorMessage } from "../lib/api";
+import { InterestPicker, PhotoPicker } from "../components/Pickers";
+import { api, errorMessage } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { PROFILE_PHOTO, uploadImage } from "../lib/image";
+import { qk } from "../lib/queries";
+import { useToast } from "../lib/toast";
 
 export function Welcome() {
   // Only bounce people who arrive already signed in. Signing in or up here
@@ -135,17 +139,19 @@ function Login() {
   );
 }
 
-const randomItem = <T,>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)];
-
 function Signup() {
   const { register } = useAuth();
+  const qc = useQueryClient();
+  const toast = useToast();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [step, setStep] = useState<1 | 2>(1);
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [avatar, setAvatar] = useState<Avatar>(() => ({ emoji: randomItem(AVATAR_EMOJIS), color: randomItem(AVATAR_COLORS) }));
+  const [photo, setPhoto] = useState<File | null>(null);
+  const preview = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
+  useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
   const [interests, setInterests] = useState<string[]>([]);
   const [inviteCode, setInviteCode] = useState(params.get("invite") ?? "");
   const [error, setError] = useState("");
@@ -166,7 +172,16 @@ function Signup() {
     setBusy(true);
     setError("");
     try {
-      await register({ displayName, username, password, avatar, interests, inviteCode: inviteCode.trim() || undefined });
+      await register({ displayName, username, password, interests, inviteCode: inviteCode.trim() || undefined });
+      // Uploads need an account, so the photo goes up once they've moved in.
+      if (photo) {
+        try {
+          const { id } = await uploadImage(photo, PROFILE_PHOTO);
+          qc.setQueryData(qk.me, await api<Me>("/api/me", { method: "PATCH", body: { photoId: id } }));
+        } catch {
+          toast("Your photo didn't upload. You can add it from your profile.", "error");
+        }
+      }
       navigate("/moved-in", { replace: true });
     } catch (err) {
       setError(errorMessage(err));
@@ -220,8 +235,8 @@ function Signup() {
         <h1>Make yourself at home</h1>
       </div>
       <div className="field">
-        <span className="label">Pick your look</span>
-        <AvatarPicker value={avatar} onChange={setAvatar} name={displayName} />
+        <span className="label">Add a photo (optional)</span>
+        <PhotoPicker src={preview} name={displayName} username={username} onPick={setPhoto} onRemove={() => setPhoto(null)} />
       </div>
       <div className="field">
         <span className="label">What are you into?</span>

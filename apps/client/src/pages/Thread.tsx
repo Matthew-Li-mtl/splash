@@ -57,7 +57,7 @@ export function Thread() {
         {other && <Avatar user={other} size={36} link />}
         <div className="grow">
           <h1 style={{ fontSize: "1.25rem" }}>{title}</h1>
-          {isPorch && <p className="tiny muted">Everyone on your street can see this.</p>}
+          {isPorch && <p className="tiny muted"></p>}
         </div>
       </div>
 
@@ -68,7 +68,7 @@ export function Thread() {
           <ErrorState error={messages.error} />
         ) : count === 0 ? (
           <p className="muted center" style={{ margin: "40px 0" }}>
-            {isPorch ? "Quiet porch. Say good morning? ☕" : `Say hi to ${other?.displayName ?? "your neighbor"} 👋`}
+            {isPorch ? "" : `Messaging ${other?.displayName ?? "your neighbor"}`}
           </p>
         ) : (
           messages.data.map((m, i) => {

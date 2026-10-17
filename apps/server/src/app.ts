@@ -35,7 +35,8 @@ export function createApp() {
     helmet({
       contentSecurityPolicy: {
         directives: {
-          "img-src": ["'self'", "data:", "blob:"],
+          // jsDelivr serves the Google (Noto) emoji art for the sticker picker and stickers.
+          "img-src": ["'self'", "data:", "blob:", "https://cdn.jsdelivr.net"],
           "media-src": ["'self'", "blob:"],
           "upgrade-insecure-requests": config.isProd ? [] : null,
         },

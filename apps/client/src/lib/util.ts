@@ -57,11 +57,14 @@ export function timeAgo(iso: string): string {
 }
 
 export function greeting(date = new Date()): string {
+  return "Welcome back";
+  /*
   const h = date.getHours();
   if (h < 5) return "Up late";
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   return "Good evening";
+  */
 }
 
 export function formatDuration(ms: number): string {

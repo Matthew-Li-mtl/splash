@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   ArrowDownToLine,
   ArrowUpToLine,
@@ -13,6 +13,7 @@ import {
   Undo2,
   Wallpaper,
 } from "lucide-react";
+import type { EmojiStyle } from "emoji-picker-react";
 import type { CollageContent, CollageElement, CollageImage, CollageText } from "@splash/shared";
 import { ShareSheet } from "../../components/ShareSheet";
 import { ErrorState, Spinner } from "../../components/States";
@@ -25,7 +26,10 @@ import { TOOLS } from "../registry";
 import { ToolHeader } from "../ToolHeader";
 import { useEditorSource, type EditorSource } from "../useEditorSource";
 import { CollageStage, type StageHandlers } from "./CollageStage";
-import { BACKGROUNDS, COLORS, FONTS, SHAPES, STICKERS } from "./palette";
+import { BACKGROUNDS, COLORS, FONTS, SHAPES } from "./palette";
+
+// The picker carries the whole emoji list, so only fetch it once the sticker panel opens.
+const EmojiPicker = lazy(() => import("emoji-picker-react"));
 
 const DRAFT_KEY = "splash.draft.collage";
 const MAX_ELEMENTS = 200;
@@ -361,13 +365,18 @@ function Editor({ source }: { source: EditorSource<"collage"> }) {
           {panel === "sticker" && (
             <>
               <h3>Stickers</h3>
-              <div className="mini-grid">
-                {STICKERS.map((s) => (
-                  <button key={s} onClick={() => add({ type: "sticker", emoji: s, w: 120, h: 120 })} aria-label={`Add ${s}`}>
-                    {s}
-                  </button>
-                ))}
-              </div>
+              <Suspense fallback={<Spinner />}>
+                <EmojiPicker
+                  className="sticker-picker"
+                  emojiStyle={"google" as EmojiStyle}
+                  onEmojiClick={(e) => add({ type: "sticker", emoji: e.emoji, w: 120, h: 120 })}
+                  previewConfig={{ showPreview: false }}
+                  searchPlaceholder="Search stickers"
+                  lazyLoadEmojis
+                  width="100%"
+                  height={420}
+                />
+              </Suspense>
             </>
           )}
 
@@ -455,7 +464,6 @@ function Editor({ source }: { source: EditorSource<"collage"> }) {
                 Add a photo, some words or a sticker. <span className="bold">Drag</span> pieces to move them, and use the{" "}
                 <span className="bold">round handle</span> to spin and resize. Tap a piece to change it.
               </p>
-              <p className="small muted">There's no wrong way to do this. Messy is charming.</p>
               {collage.elements.length > 0 && isNew && (
                 <button
                   className="btn btn-ghost btn-sm btn-danger"

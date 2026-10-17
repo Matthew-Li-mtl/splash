@@ -10,16 +10,18 @@ export const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/;
 export const REACTIONS = ["❤️", "✨", "😂", "👏", "🥹"] as const;
 export type Reaction = (typeof REACTIONS)[number];
 
-export const AVATAR_EMOJIS = [
-  "🦊", "🐻", "🐼", "🐨", "🐸", "🐙", "🦉", "🐝", "🦔", "🐢",
-  "🐳", "🦋", "🐌", "🦜", "🐿️", "🦦", "🐞", "🐧", "🦩", "🐱",
-  "🌻", "🌵", "🍄", "🌙", "⭐", "🔥", "🌈", "🍉", "🎈", "🪴",
+/** Backgrounds for initials avatars, Google-style. All dark enough for white letters. */
+export const AVATAR_COLORS = [
+  "#c2185b", "#7b1fa2", "#512da8", "#1976d2", "#0277bd",
+  "#00796b", "#388e3c", "#e64a19", "#5d4037", "#455a64",
 ] as const;
 
-export const AVATAR_COLORS = [
-  "#f4a261", "#e76f51", "#e9c46a", "#8ab17d", "#2a9d8f",
-  "#90bede", "#7d8cc4", "#b392ac", "#f28482", "#c9ada7",
-] as const;
+/** A person's initials color: picked from their username, so it never changes. */
+export function avatarColor(username: string): string {
+  let h = 0;
+  for (const ch of username) h = (h * 31 + ch.codePointAt(0)!) >>> 0;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
 
 export interface Interest {
   id: string;

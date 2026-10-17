@@ -8,11 +8,6 @@ export const interestsSchema = z
   .array(z.string().refine((i) => INTEREST_IDS.includes(i), "Unknown interest."))
   .max(10, "Pick up to 10 interests.");
 
-export const avatarSchema = z.object({
-  emoji: z.string().min(1).max(16),
-  color: z.string().regex(/^#[0-9a-f]{6}$/i, "Pick a color."),
-});
-
 const color = z.string().max(40);
 const noteCell = z.tuple([z.number().int().min(0).max(511), z.number().int().min(0).max(63)]);
 

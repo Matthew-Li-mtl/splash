@@ -27,7 +27,7 @@ export const TOOLS: Record<PostKind, ToolMeta> = {
     color: "var(--c-write)",
     icon: PenLine,
     path: "/make/write",
-    blurb: "A prompt, a challenge or a blank page. Six words counts.",
+    blurb: "...and if you can't, we got things to help you.",
     deco: "✍️",
   },
   collage: {
@@ -37,7 +37,7 @@ export const TOOLS: Record<PostKind, ToolMeta> = {
     color: "var(--c-collage)",
     icon: Images,
     path: "/make/collage",
-    blurb: "Photos, stickers, paper scraps and doodles. Move things around until it feels right.",
+    blurb: "Keep it pg-13 maybe.",
     deco: "✂️",
   },
   song: {
@@ -47,7 +47,7 @@ export const TOOLS: Record<PostKind, ToolMeta> = {
     color: "var(--c-song)",
     icon: Music,
     path: "/make/song",
-    blurb: "Tap the grid to make a tune. Every note is in key, so nothing sounds wrong.",
+    blurb: "Make a loop by dropping stuff onto the beat grid.",
     deco: "🎶",
   },
   puzzle: {
@@ -57,7 +57,7 @@ export const TOOLS: Record<PostKind, ToolMeta> = {
     color: "var(--c-puzzle)",
     icon: Puzzle,
     path: "/play",
-    blurb: "Sudoku and Minesweeper. Share your time and see if neighbors can beat it.",
+    blurb: "Sudoku and Minesweeper. Share your time with others if you'd like.",
     deco: "🧩",
   },
 };

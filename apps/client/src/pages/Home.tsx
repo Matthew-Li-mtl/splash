@@ -28,9 +28,8 @@ export function Home() {
       <div className="page-head">
         <div>
           <h1>
-            {greeting()}, {me.displayName}
+            {greeting()}, {me.displayName}.
           </h1>
-          <p>{hood ? `Here's what's happening on ${hood.name}.` : " "}</p>
         </div>
       </div>
 
@@ -46,7 +45,7 @@ export function Home() {
         <div className="today-card" style={{ "--tile": "var(--c-puzzle)" } as CSSProperties}>
           <span className="eyebrow">Daily sudoku</span>
           <p>
-            Everyone on the street gets the same puzzle today. It's{" "}
+            Today's puzzle is{" "}
             <span className="bold">{puzzle.difficulty}</span>.
           </p>
           <div className="grow" />
@@ -88,7 +87,6 @@ export function Home() {
       )}
 
       <section className="stack" aria-label="From your neighbors">
-        <h2 className="section-title">From the neighborhood</h2>
         {feed.isPending ? (
           <Spinner />
         ) : feed.isError ? (
@@ -112,9 +110,8 @@ export function Home() {
             ) : (
               <div className="caught-up">
                 <div className="moon">🌙</div>
-                <h3>You're all caught up</h3>
                 <p className="muted small" style={{ margin: "6px 0 14px" }}>
-                  That's everything from {hood?.name ?? "your neighbors"}. Why not make something?
+                  You've seen every post, congrats.
                 </p>
                 <Link to="/make" className="btn btn-sm">
                   Make something

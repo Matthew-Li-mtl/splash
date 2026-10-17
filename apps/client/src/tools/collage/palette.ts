@@ -58,14 +58,19 @@ export const FONTS: { id: CollageText["font"]; name: string; css: string }[] = [
   { id: "mono", name: "Typewriter", css: "var(--font-mono)" },
 ];
 
-export const STICKERS = [
-  "🌸", "🌼", "🌿", "🍂", "🍄", "🌻", "🌵", "🌙", "⭐", "☀️", "🌈", "☁️",
-  "🦋", "🐝", "🐞", "🐌", "🐈", "🐕", "🐟", "🕊️",
-  "🍓", "🍋", "🍒", "🥐", "☕", "🍰", "🍉", "🧁", "🍵", "🥨",
-  "🎈", "🎀", "📷", "✉️", "🔑", "💌", "🕯️", "🎧", "📚", "✏️", "🧸", "🪴", "🎨", "🧵",
-  "❤️", "💛", "💚", "💙", "💜", "✨", "💫", "🔥", "👀", "😊", "🥰", "🤍",
-  "🚲", "🏠", "⛺", "🗺️", "✈️", "🚂", "🌊", "⛰️", "🎡", "🏖️",
-];
+/** Google's Noto emoji artwork, pinned to a release so stickers never change under people. */
+const NOTO_EMOJI = "https://cdn.jsdelivr.net/gh/googlefonts/noto-emoji@v2.051";
+
+/**
+ * Vector Noto artwork for a sticker's emoji, so it looks the same on every device and
+ * stays crisp at any size. Files are named by code point, without the FE0F selector.
+ */
+export function stickerUrl(emoji: string): string {
+  const cps = Array.from(emoji, (c) => c.codePointAt(0)!).filter((cp) => cp !== 0xfe0f);
+  const name = `emoji_u${cps.map((cp) => cp.toString(16).padStart(4, "0")).join("_")}.svg`;
+  const isFlag = cps.length === 2 && cps.every((cp) => cp >= 0x1f1e6 && cp <= 0x1f1ff);
+  return `${NOTO_EMOJI}/${isFlag ? "third_party/region-flags/waved-svg" : "svg"}/${name}`;
+}
 
 export const SHAPES = [
   { id: "tape", name: "Washi tape" },
