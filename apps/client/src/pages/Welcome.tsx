@@ -65,15 +65,14 @@ function Landing() {
         <div className="feature">
           <span className="feature-emoji">🪴</span>
           <p>
-            <span className="bold">Just you is plenty.</span> Make things for yourself, and invite people whenever you
+            Make a space for yourself, and invite people whenever you
             like.
           </p>
         </div>
         <div className="feature">
           <span className="feature-emoji">🏘️</span>
           <p>
-            <span className="bold">Stay connected with up to 20 of your friends!</span> Like stories, but with way more
-            ways to share, and no ice to break.
+            Stay connected with up to 20 of your friends!
           </p>
         </div>
         <div className="feature">
