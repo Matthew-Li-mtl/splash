@@ -2,9 +2,11 @@ import { Suspense, type CSSProperties } from "react";
 import { Link } from "react-router";
 import { Lock, MessageCircle } from "lucide-react";
 import type { PostDTO } from "@splash/shared";
+import { useAuth } from "../lib/auth";
 import { timeAgo } from "../lib/util";
 import { TOOLS, VIEWERS } from "../tools/registry";
 import { Avatar } from "./Avatar";
+import { PostMenu } from "./PostMenu";
 import { Reactions } from "./Reactions";
 import { Spinner } from "./States";
 
@@ -12,6 +14,7 @@ export function PostCard({ post, compact = true }: { post: PostDTO; compact?: bo
   const tool = TOOLS[post.kind];
   const Viewer = VIEWERS[post.kind];
   const Icon = tool.icon;
+  const { user: me } = useAuth();
 
   return (
     <article className="card post-card">
@@ -36,6 +39,8 @@ export function PostCard({ post, compact = true }: { post: PostDTO; compact?: bo
             )}
           </div>
         </div>
+        {/* The full post page has its own row of buttons, so only cards need the menu. */}
+        {compact && post.author.id === me?.id && <PostMenu post={post} />}
       </header>
 
       <div className="post-body">
