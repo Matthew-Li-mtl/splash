@@ -19,9 +19,25 @@ export interface Me extends PublicUser {
   lastMovedAt: string | null;
 }
 
+/**
+ * Returned by register, login and refresh. The access token is short-lived and
+ * kept in memory by the client; the refresh token travels in an httpOnly cookie.
+ */
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
+  /** Seconds until the access token expires. */
+  expiresIn: number;
   user: Me;
+}
+
+/** One signed-in device, for the "Signed-in devices" list in settings. */
+export interface SessionDTO {
+  id: string;
+  device: string;
+  lastUsedAt: string;
+  createdAt: string;
+  /** True for the device making the request. */
+  current: boolean;
 }
 
 export interface RegisterBody {
@@ -126,6 +142,8 @@ export interface GameDTO<S extends BaseGameState = BaseGameState> {
   /** Which seat the requesting user is in. */
   you: Player;
   resignedBy: Player | null;
+  /** Ended without a result because one player blocked the other. */
+  cancelled: boolean;
   moveCount: number;
   createdAt: string;
   updatedAt: string;
@@ -139,4 +157,18 @@ export interface Badges {
 export interface AssetUploadResponse {
   id: string;
   size: number;
+}
+
+// ---------- Blocking ----------
+
+/** A profile as seen by the viewer. */
+export interface ProfileDTO extends PublicUser {
+  /** The viewer blocked this person (their content is hidden; the profile shows an Unblock option). */
+  blockedByMe: boolean;
+}
+
+/** Someone the viewer has blocked, for the list in settings. */
+export interface BlockedUserDTO {
+  user: PublicUser;
+  blockedAt: string;
 }

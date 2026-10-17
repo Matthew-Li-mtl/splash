@@ -12,6 +12,7 @@ export function isMyTurn(game: GameDTO) {
 export function describeGame(game: GameDTO): string {
   const them = opponentOf(game).displayName;
   if (game.status === "active") return isMyTurn(game) ? "Your move" : `Waiting on ${them}`;
+  if (game.cancelled) return "This game ended without a result";
   const { winner } = game.state;
   if (winner === -1) return "It's a draw";
   if (game.resignedBy !== null) return game.resignedBy === game.you ? "You resigned" : `${them} resigned. You win!`;

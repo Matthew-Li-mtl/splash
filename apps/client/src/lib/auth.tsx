@@ -1,54 +1,114 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { AuthResponse, LoginBody, Me, RegisterBody } from "@splash/shared";
-import { api, authEvents, getToken, setToken } from "./api";
+import { api, authEvents, clearSession, hasSessionHint, refreshSession, startSession } from "./api";
 import { qk, useMe } from "./queries";
+
+/**
+ * checking  = on page load, asking the server whether our refresh cookie is still good
+ * signedIn  = we hold an access token and the user is loaded
+ * signedOut = no session
+ */
+type Status = "checking" | "signedIn" | "signedOut";
 
 interface AuthContextValue {
   user: Me | undefined;
-  /** True until we know whether a stored token is still valid. */
+  status: Status;
+  /** True until we know whether there's a valid session. */
   loading: boolean;
   signedIn: boolean;
+  /** Set when the startup check failed for a reason other than "not signed in" (e.g. server asleep). */
+  bootError: unknown;
+  retryBoot(): void;
   login(body: LoginBody): Promise<Me>;
   register(body: RegisterBody): Promise<Me>;
-  logout(): void;
+  logout(): Promise<void>;
+  logoutEverywhere(): Promise<void>;
+  /** Adopt a new session handed back by the server (e.g. after changing password). */
+  adoptSession(res: AuthResponse): void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
-  const [signedIn, setSignedIn] = useState(() => !!getToken());
-  const me = useMe();
+  // Only browsers that had a session need the startup refresh; everyone else is
+  // signed out immediately (no request, so visiting the welcome page doesn't wake the server).
+  const [status, setStatus] = useState<Status>(() => (hasSessionHint() ? "checking" : "signedOut"));
+  const [bootError, setBootError] = useState<unknown>(null);
+  const me = useMe(status === "signedIn");
+
+  const adoptSession = useCallback(
+    (res: AuthResponse) => {
+      startSession(res);
+      qc.setQueryData(qk.me, res.user);
+      setStatus("signedIn");
+    },
+    [qc],
+  );
+
+  const boot = useCallback(async () => {
+    setBootError(null);
+    try {
+      const res = await refreshSession();
+      if (res) adoptSession(res);
+      else setStatus("signedOut");
+    } catch (err) {
+      setBootError(err); // stay in "checking"; the WakingUp screen offers a retry
+    }
+  }, [adoptSession]);
+
+  useEffect(() => {
+    if (status === "checking") void boot();
+    // Run once on mount; retries go through retryBoot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const onSignedOut = () => {
-      setSignedIn(false);
+      setStatus("signedOut");
       qc.clear();
     };
+    const onSession = (e: Event) => qc.setQueryData(qk.me, (e as CustomEvent<AuthResponse>).detail.user);
     authEvents.addEventListener("signed-out", onSignedOut);
-    return () => authEvents.removeEventListener("signed-out", onSignedOut);
+    authEvents.addEventListener("session", onSession);
+    return () => {
+      authEvents.removeEventListener("signed-out", onSignedOut);
+      authEvents.removeEventListener("session", onSession);
+    };
   }, [qc]);
 
   const accept = (res: AuthResponse) => {
     qc.clear();
-    setToken(res.token);
-    qc.setQueryData(qk.me, res.user);
-    setSignedIn(true);
+    adoptSession(res);
     return res.user;
   };
 
+  const signOutLocally = () => {
+    clearSession();
+    setStatus("signedOut");
+    qc.clear();
+  };
+
   const value: AuthContextValue = {
-    user: signedIn ? me.data : undefined,
-    loading: signedIn && me.isPending,
-    signedIn,
+    user: status === "signedIn" ? me.data : undefined,
+    status,
+    loading: status === "checking" || (status === "signedIn" && me.isPending),
+    signedIn: status === "signedIn",
+    bootError,
+    retryBoot: () => void boot(),
     login: async (body) => accept(await api<AuthResponse>("/api/auth/login", { method: "POST", body })),
     register: async (body) => accept(await api<AuthResponse>("/api/auth/register", { method: "POST", body })),
-    logout: () => {
-      setToken(null);
-      setSignedIn(false);
-      qc.clear();
+    logout: async () => {
+      // Tell the server to forget this device; sign out locally even if that fails.
+      await api("/api/auth/logout", { method: "POST", body: {} }).catch(() => {});
+      signOutLocally();
     },
+    logoutEverywhere: async () => {
+      await api("/api/auth/logout-all", { method: "POST", body: {} });
+      signOutLocally();
+    },
+    adoptSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

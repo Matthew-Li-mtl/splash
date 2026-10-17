@@ -8,6 +8,8 @@ const gameSchema = new Schema(
     players: { type: [Schema.Types.ObjectId], ref: "User", required: true },
     state: { type: Schema.Types.Mixed, required: true },
     status: { type: String, enum: ["active", "finished"], default: "active" },
+    /** Ended without a result (one player blocked the other). */
+    cancelled: { type: Boolean, default: false },
     resignedBy: { type: Number, default: null },
     moveCount: { type: Number, default: 0 },
   },

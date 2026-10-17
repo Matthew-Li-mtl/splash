@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { USERNAME_PATTERN, type Me } from "@splash/shared";
 import { Logo } from "../components/Logo";
+import { WakingUp } from "../components/States";
 import { InterestPicker, PhotoPicker } from "../components/Pickers";
 import { api, errorMessage } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -14,9 +15,11 @@ import { useToast } from "../lib/toast";
 export function Welcome() {
   // Only bounce people who arrive already signed in. Signing in or up here
   // navigates on its own (e.g. to the "moved in" screen), so don't race it.
-  const { signedIn } = useAuth();
-  const [arrivedSignedIn] = useState(signedIn);
-  if (arrivedSignedIn) return <Navigate to="/" replace />;
+  const { status } = useAuth();
+  const [arrivedAs] = useState(status);
+  // Still restoring a session from the refresh cookie: wait rather than flash the form.
+  if (status === "checking") return <WakingUp />;
+  if (arrivedAs === "signedIn" || (arrivedAs === "checking" && status === "signedIn")) return <Navigate to="/" replace />;
 
   return (
     <div className="welcome">

@@ -1,5 +1,5 @@
-just make something.
+https://splash-q7ob.onrender.com
 
-base product generated, but of course i'm going to tweak a lot of things and study the architecture, system, etc...
+Create instead of consume, connect rather than compare.
 
-CS is a weird job now.
+Base product generated, but I've been spending a lot of time studying the architecture, system design, etc...due diligence as a cs student.

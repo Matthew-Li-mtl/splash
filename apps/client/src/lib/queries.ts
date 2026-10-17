@@ -16,7 +16,7 @@ import type {
   ThreadSummary,
   UpdatePostBody,
 } from "@splash/shared";
-import { api, getToken } from "./api";
+import { api } from "./api";
 
 export const qk = {
   me: ["me"] as const,
@@ -36,8 +36,9 @@ export const qk = {
 const withBefore = (path: string, before: string | null) =>
   before ? `${path}${path.includes("?") ? "&" : "?"}before=${encodeURIComponent(before)}` : path;
 
-export const useMe = () =>
-  useQuery({ queryKey: qk.me, queryFn: () => api<Me>("/api/me"), enabled: !!getToken(), staleTime: 60_000 });
+/** The signed-in user. AuthProvider enables it once a session exists. */
+export const useMe = (enabled = true) =>
+  useQuery({ queryKey: qk.me, queryFn: () => api<Me>("/api/me"), enabled, staleTime: 60_000 });
 
 export const useNeighborhood = () =>
   useQuery({ queryKey: qk.neighborhood, queryFn: () => api<NeighborhoodDTO>("/api/neighborhood"), staleTime: 60_000 });

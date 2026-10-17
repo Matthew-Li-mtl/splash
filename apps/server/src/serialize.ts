@@ -1,5 +1,6 @@
-import type { Types } from "mongoose";
+import { Types } from "mongoose";
 import type { Me, PostDTO, PublicUser, ReactionSummary } from "@splash/shared";
+import { Comment } from "./models/Comment";
 import { User, type UserDoc } from "./models/User";
 import { Post, type PostDoc } from "./models/Post";
 
@@ -46,9 +47,10 @@ export function userOrPlaceholder(users: Map<string, PublicUser>, id: Types.Obje
   return users.get(String(id)) ?? deletedUser(String(id));
 }
 
-function summarizeReactions(reactions: PostDoc["reactions"]): ReactionSummary[] {
+function summarizeReactions(reactions: PostDoc["reactions"], hidden: Set<string>): ReactionSummary[] {
   const byEmoji = new Map<string, string[]>();
   for (const r of reactions) {
+    if (hidden.has(r.userId.toString())) continue;
     const list = byEmoji.get(r.emoji) ?? [];
     list.push(r.userId.toString());
     byEmoji.set(r.emoji, list);
@@ -56,14 +58,27 @@ function summarizeReactions(reactions: PostDoc["reactions"]): ReactionSummary[] 
   return [...byEmoji].map(([emoji, userIds]) => ({ emoji, userIds }));
 }
 
-/** Serialize posts with their authors (and remix sources) resolved. */
-export async function toPostDTOs(posts: PostDoc[]): Promise<PostDTO[]> {
+/**
+ * Serialize posts with their authors (and remix sources) resolved. `hidden` is the
+ * viewer's blocked set: their reactions, reply counts and remix credit are left out.
+ */
+export async function toPostDTOs(posts: PostDoc[], hidden: Set<string> = new Set()): Promise<PostDTO[]> {
   const remixIds = posts.map((p) => p.remixOf).filter((id): id is Types.ObjectId => !!id);
   const remixSources = remixIds.length
     ? await Post.find({ _id: { $in: remixIds } }, { authorId: 1 })
     : [];
   const remixAuthor = new Map(remixSources.map((p) => [p._id.toString(), p.authorId.toString()]));
   const users = await loadUsers([...posts.map((p) => p.authorId), ...remixAuthor.values()]);
+
+  // Replies from hidden people don't show, so don't count them either (one grouped query).
+  const hiddenReplies = new Map<string, number>();
+  if (hidden.size && posts.length) {
+    const rows = await Comment.aggregate<{ _id: Types.ObjectId; n: number }>([
+      { $match: { postId: { $in: posts.map((p) => p._id) }, authorId: { $in: [...hidden].map((id) => new Types.ObjectId(id)) } } },
+      { $group: { _id: "$postId", n: { $sum: 1 } } },
+    ]);
+    for (const r of rows) hiddenReplies.set(r._id.toString(), r.n);
+  }
 
   return posts.map((p) => {
     const remixAuthorId = p.remixOf ? remixAuthor.get(p.remixOf.toString()) : undefined;
@@ -74,10 +89,10 @@ export async function toPostDTOs(posts: PostDoc[]): Promise<PostDTO[]> {
       content: p.content,
       visibility: p.visibility,
       author: userOrPlaceholder(users, p.authorId),
-      reactions: summarizeReactions(p.reactions),
-      commentCount: p.commentCount,
+      reactions: summarizeReactions(p.reactions, hidden),
+      commentCount: Math.max(0, p.commentCount - (hiddenReplies.get(p._id.toString()) ?? 0)),
       remixOf: p.remixOf
-        ? { id: p.remixOf.toString(), author: remixAuthorId ? (users.get(remixAuthorId) ?? null) : null }
+        ? { id: p.remixOf.toString(), author: remixAuthorId && !hidden.has(remixAuthorId) ? (users.get(remixAuthorId) ?? null) : null }
         : null,
       createdAt: p.createdAt.toISOString(),
       updatedAt: p.updatedAt.toISOString(),

@@ -7,17 +7,23 @@ const check = (cond, label) => {
   if (!cond) failures++;
 };
 
-async function call(path, { token, method = "GET", body, raw, type } = {}) {
+async function call(path, { token, cookie, method = "GET", body, raw, type } = {}) {
   const headers = {};
   if (token) headers.Authorization = `Bearer ${token}`;
+  if (cookie) headers.Cookie = cookie;
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (raw) headers["Content-Type"] = type;
   const res = await fetch(BASE + path, { method, headers, body: raw ?? (body !== undefined ? JSON.stringify(body) : undefined) });
   const text = await res.text();
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-  return { status: res.status, data, headers: res.headers };
+  const setCookie = res.headers.get("set-cookie") ?? "";
+  // The refresh cookie as a Cookie header value ("splash_rt=…"), if the response set one.
+  const rt = /splash_rt=([^;]*)/.exec(setCookie)?.[1];
+  return { status: res.status, data, headers: res.headers, setCookie, cookie: rt ? `splash_rt=${rt}` : null };
 }
+
+const refresh = (cookie) => call("/api/auth/refresh", { method: "POST", body: {}, cookie });
 
 const suffix = Date.now().toString(36).slice(-5);
 const reg = (name, interests, inviteCode) =>
@@ -30,11 +36,12 @@ const health = await call("/api/health");
 check(health.status === 200 && health.data.db === "connected", "health ok + db connected");
 
 const a = await reg("alice", ["music", "writing"]);
-check(a.status === 201 && a.data.token, "register alice");
+check(a.status === 201 && a.data.accessToken && a.data.expiresIn === 900, "register alice (15-minute access token)");
 const b = await reg("bob", ["music"]);
 const c = await reg("cara", ["puzzles"]);
 check(b.status === 201 && c.status === 201, "register bob, cara");
-const A = a.data.token, B = b.data.token, C = c.data.token;
+let A = a.data.accessToken;
+const B = b.data.accessToken, C = c.data.accessToken;
 
 const dup = await reg("alice", []);
 check(dup.status === 409, "duplicate username rejected");
@@ -48,6 +55,63 @@ check(badLogin.status === 401, "wrong password rejected");
 
 const noAuth = await call("/api/me");
 check(noAuth.status === 401, "me requires auth");
+
+// ---- sessions: refresh cookie, rotation, revocation ----
+check(/HttpOnly/i.test(a.setCookie) && /SameSite=Strict/i.test(a.setCookie) && /Path=\/api\/auth/i.test(a.setCookie), "refresh cookie is HttpOnly, SameSite=Strict, scoped to /api/auth");
+check(!("token" in a.data) && !JSON.stringify(a.data).includes(a.cookie.split("=")[1]), "refresh token never appears in the JSON body");
+const noJson = await call("/api/auth/refresh", { method: "POST", cookie: a.cookie, raw: "x", type: "text/plain" });
+check(noJson.status === 415, "refresh requires a JSON body (CSRF layer)");
+const noCookie = await refresh(undefined);
+check(noCookie.status === 401, "refresh without cookie → 401");
+const r1 = await refresh(a.cookie);
+check(r1.status === 200 && r1.data.accessToken && r1.cookie && r1.cookie !== a.cookie, "refresh rotates the cookie and returns a new access token");
+check(r1.data.user?.displayName === "alice", "refresh returns the user (no extra /me call on page load)");
+const race = await refresh(a.cookie);
+check(race.status === 401 && race.data.code === "refresh_retry", "reusing the just-rotated token inside the grace window → refresh_retry (two-tab race)");
+const r2 = await refresh(r1.cookie);
+check(r2.status === 200, "the rotated token keeps working after a harmless race");
+const garbage = await refresh("splash_rt=not-a-real-token");
+check(garbage.status === 401 && garbage.data.code === "session_ended", "unknown refresh token → 401 session_ended");
+A = r2.data.accessToken;
+
+const forged = await call("/api/me", { token: A.slice(0, -4) + "AAAA" });
+check(forged.status === 401, "tampered access token rejected");
+const sess = await call("/api/me/sessions", { token: A });
+check(sess.status === 200 && sess.data.length >= 2 && sess.data.filter((x) => x.current).length === 1, `sessions list (${sess.data.length} devices, one marked current)`);
+// The login above created a second alice session; sign that device out remotely.
+const other = sess.data.find((x) => !x.current);
+const delOther = await call(`/api/me/sessions/${other.id}`, { method: "DELETE", token: A });
+const otherRefresh = await refresh(login.cookie);
+check(delOther.status === 204 && otherRefresh.status === 401, "signing out another device kills its refresh token");
+
+// A throwaway user for logout / password change / sign out everywhere.
+const z = await reg("zed", []);
+const zLogout = await call("/api/auth/logout", { method: "POST", body: {}, cookie: z.cookie });
+const zAfter = await refresh(z.cookie);
+check(zLogout.status === 204 && zAfter.status === 401, "logout ends the session");
+const zedLogin = () => call("/api/auth/login", { method: "POST", body: { username: `zed_${suffix}`, password: "password123" } });
+const z2 = await zedLogin();
+const z3 = await zedLogin();
+const pw = await call("/api/me/password", { method: "POST", token: z2.data.accessToken, body: { current: "password123", next: "password456" } });
+check(pw.status === 200 && pw.data.accessToken && pw.cookie, "password change returns a fresh session for this device");
+const oldAccess = await call("/api/me", { token: z3.data.accessToken });
+check(oldAccess.status === 401 && oldAccess.data.code === "token_revoked", "password change instantly revokes other access tokens");
+const oldRefresh = await refresh(z3.cookie);
+check(oldRefresh.status === 401, "password change signs out other devices");
+const newMe = await call("/api/me", { token: pw.data.accessToken });
+check(newMe.status === 200, "the new session after a password change works");
+const all = await call("/api/auth/logout-all", { method: "POST", body: {}, token: pw.data.accessToken, cookie: pw.cookie });
+const afterAll = await call("/api/me", { token: pw.data.accessToken });
+check(all.status === 204 && afterAll.status === 401, "sign out everywhere revokes the current access token immediately");
+if (process.env.SMOKE_SLOW) {
+  // Replaying a rotated token after the 30 s grace window means it was copied: revoke the session.
+  const t = await reg("tess", []);
+  const t1 = await refresh(t.cookie);
+  await new Promise((r) => setTimeout(r, 31_000));
+  const replay = await refresh(t.cookie);
+  const legit = await refresh(t1.cookie);
+  check(replay.status === 401 && legit.status === 401, "replaying an old refresh token revokes the whole session (theft detection)");
+}
 
 const hood = await call("/api/neighborhood", { token: A });
 check(hood.status === 200 && hood.data.members.length >= 3, `neighborhood ${hood.data.name} has ${hood.data.members.length} members`);
