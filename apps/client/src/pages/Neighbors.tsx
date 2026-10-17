@@ -44,10 +44,6 @@ export function Neighbors() {
       {emptyLots > 0 && (
         <div className="card stack">
           <h3>{members.length === 1 ? "Bring someone you know" : "Invite someone to your street"}</h3>
-          <p className="muted small">
-            Think stories, but your friends answer with songs, collages, tier lists and games. People you already know
-            skip the awkward small talk. Anyone who signs up with this link moves in here while there's room.
-          </p>
           <InviteBox code={inviteCode} />
         </div>
       )}
