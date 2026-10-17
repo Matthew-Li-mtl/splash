@@ -6,6 +6,7 @@ import { USERNAME_PATTERN, type Me } from "@splash/shared";
 import { Logo } from "../components/Logo";
 import { WakingUp } from "../components/States";
 import { InterestPicker, PhotoPicker } from "../components/Pickers";
+import { StartChoice, startBody, type StartChoiceValue } from "../components/StartChoice";
 import { api, errorMessage } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { PROFILE_PHOTO, uploadImage } from "../lib/image";
@@ -62,9 +63,17 @@ function Landing() {
           </p>
         </div>
         <div className="feature">
+          <span className="feature-emoji">🪴</span>
+          <p>
+            <span className="bold">Just you is plenty.</span> Make things for yourself, and invite people whenever you
+            like.
+          </p>
+        </div>
+        <div className="feature">
           <span className="feature-emoji">🏘️</span>
           <p>
-            <span className="bold">Stay connected with up to 20 of your friends!</span>
+            <span className="bold">Stay connected with up to 20 of your friends!</span> Like stories, but with way more
+            ways to share, and no ice to break.
           </p>
         </div>
         <div className="feature">
@@ -154,7 +163,10 @@ function Signup() {
   const preview = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
   const [interests, setInterests] = useState<string[]>([]);
-  const [inviteCode, setInviteCode] = useState(params.get("invite") ?? "");
+  const [where, setWhere] = useState<StartChoiceValue>(() => {
+    const invite = params.get("invite");
+    return invite ? { mode: "invite", inviteCode: invite } : { mode: "solo", inviteCode: "" };
+  });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -173,7 +185,7 @@ function Signup() {
     setBusy(true);
     setError("");
     try {
-      await register({ displayName, username, password, interests, inviteCode: inviteCode.trim() || undefined });
+      await register({ displayName, username, password, interests, ...startBody(where) });
       // Uploads need an account, so the photo goes up once they've moved in.
       if (photo) {
         try {
@@ -241,16 +253,16 @@ function Signup() {
       </div>
       <div className="field">
         <span className="label">What are you into?</span>
-        <span className="hint">We'll try to put you on a street with people who like similar things.</span>
+        <span className="hint">Shown on your profile. If you ask to be matched, we'll look for people who like similar things.</span>
         <InterestPicker value={interests} onChange={setInterests} />
       </div>
-      <label className="field">
-        <span className="label">Invite code (optional)</span>
-        <input className="input" value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} placeholder="From a friend's neighborhood" autoCapitalize="none" />
-      </label>
+      <div className="field">
+        <span className="label">Where will you live?</span>
+        <StartChoice value={where} onChange={setWhere} />
+      </div>
       {error && <p className="form-error">{error}</p>}
       <button className="btn btn-accent btn-block" disabled={busy}>
-        {busy ? "Finding your street…" : "Move in"}
+        {busy ? "Moving in…" : "Move in"}
       </button>
     </form>
   );

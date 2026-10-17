@@ -11,6 +11,11 @@ const userSchema = new Schema(
     interests: { type: [String], default: [] },
     neighborhoodId: { type: Schema.Types.ObjectId, ref: "Neighborhood", default: null, index: true },
     lastMovedAt: { type: Date, default: null },
+    /**
+     * Asked for their street to be invite only. Registration sets it explicitly (true unless they
+     * chose to be matched); accounts from before this setting existed have no value and count as open.
+     */
+    wantsPrivate: { type: Boolean },
     /** Bumped to instantly invalidate every access token (password change, "sign out everywhere"). */
     tokenVersion: { type: Number, default: 0 },
     /** channel id → when this user last read it. */

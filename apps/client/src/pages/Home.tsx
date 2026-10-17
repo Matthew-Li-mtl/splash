@@ -78,9 +78,10 @@ export function Home() {
 
       {alone && (
         <div className="card stack">
-          <h3>You're the first one on the street 🏡</h3>
+          <h3>Just you so far 🏡</h3>
           <p className="muted">
-            New neighbors move in as people join. Want a friend next door? Send them your invite code.
+            That's fine. Make things for yourself! When you want company, invite people you know. It's like sharing
+            stories, with songs, collages, tier lists and games, and no ice to break.
           </p>
           <InviteBox code={hood.inviteCode} />
         </div>

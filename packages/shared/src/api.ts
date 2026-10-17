@@ -17,7 +17,16 @@ export interface PublicUser {
 export interface Me extends PublicUser {
   neighborhoodId: string | null;
   lastMovedAt: string | null;
+  /** This person asked for their street to be invite only. One such member makes the whole street invite only. */
+  wantsPrivate: boolean;
 }
+
+/**
+ * Where a new or moving person lives. "solo" starts a fresh street of their own (the default);
+ * "match" puts them on an open street with strangers who share their interests (the last resort).
+ * An invite code always wins over either.
+ */
+export type StartMode = "solo" | "match";
 
 /**
  * Returned by register, login and refresh. The access token is short-lived and
@@ -46,6 +55,7 @@ export interface RegisterBody {
   password: string;
   interests: string[];
   inviteCode?: string;
+  start?: StartMode;
 }
 
 export interface LoginBody {
@@ -53,7 +63,23 @@ export interface LoginBody {
   password: string;
 }
 
-export type UpdateMeBody = Partial<Pick<PublicUser, "displayName" | "bio" | "photoId" | "interests">>;
+export type UpdateMeBody = Partial<Pick<Me, "displayName" | "bio" | "photoId" | "interests" | "wantsPrivate">>;
+
+export interface MoveBody {
+  start: StartMode;
+  inviteCode?: string;
+}
+
+/** An open vote to rename the street. Passes when at least half of the current members vote yes. */
+export interface NameProposalDTO {
+  name: string;
+  /** Null if the proposer is hidden from you by a block. */
+  proposedBy: PublicUser | null;
+  yesVotes: number;
+  votesNeeded: number;
+  votedByMe: boolean;
+  expiresAt: string;
+}
 
 export interface NeighborhoodDTO {
   id: string;
@@ -62,6 +88,11 @@ export interface NeighborhoodDTO {
   members: PublicUser[];
   capacity: number;
   createdAt: string;
+  /** True if any member asked for invite only. Strangers are never matched onto an invite-only street. */
+  inviteOnly: boolean;
+  /** The founder may replace the default name once, without a vote. True only for the founder, until then. */
+  canNameFreely: boolean;
+  nameProposal: NameProposalDTO | null;
 }
 
 export type Visibility = "neighbors" | "private";

@@ -7,7 +7,7 @@ import { Asset } from "../models/Asset";
 import { Session } from "../models/Session";
 import { Game } from "../models/Game";
 import { toMe } from "../serialize";
-import { updateInterestCounts } from "../services/neighborhoods";
+import { setWantsPrivate, updateInterestCounts } from "../services/neighborhoods";
 import { createSession, endAllSessions } from "../services/sessions";
 import { respond } from "./auth";
 import { listThreads } from "./messages";
@@ -26,6 +26,7 @@ const updateSchema = z.object({
   /** An asset id from POST /api/assets, or null to go back to initials. */
   photoId: z.string().max(64).nullable().optional(),
   interests: interestsSchema.optional(),
+  wantsPrivate: z.boolean().optional(),
 });
 
 meRouter.patch("/", async (req, res) => {
@@ -35,6 +36,7 @@ meRouter.patch("/", async (req, res) => {
     await updateInterestCounts(user, user.interests, body.interests);
     user.interests = body.interests;
   }
+  if (body.wantsPrivate !== undefined) await setWantsPrivate(user, body.wantsPrivate);
   if (body.displayName !== undefined) user.displayName = body.displayName;
   if (body.bio !== undefined) user.bio = body.bio;
   if (body.photoId !== undefined && body.photoId !== user.photoId) {

@@ -43,6 +43,25 @@ export const useMe = (enabled = true) =>
 export const useNeighborhood = () =>
   useQuery({ queryKey: qk.neighborhood, queryFn: () => api<NeighborhoodDTO>("/api/neighborhood"), staleTime: 60_000 });
 
+/** Renaming the street: each call returns the updated street, which replaces the cached one. */
+export function useStreetName() {
+  const qc = useQueryClient();
+  const onSuccess = (hood: NeighborhoodDTO) => qc.setQueryData(qk.neighborhood, hood);
+  return {
+    /** The founder's one-time rename of the default name. */
+    name: useMutation({ mutationFn: (name: string) => api<NeighborhoodDTO>("/api/neighborhood/name", { method: "POST", body: { name } }), onSuccess }),
+    propose: useMutation({
+      mutationFn: (name: string) => api<NeighborhoodDTO>("/api/neighborhood/name-proposal", { method: "POST", body: { name } }),
+      onSuccess,
+    }),
+    vote: useMutation({
+      mutationFn: (yes: boolean) => api<NeighborhoodDTO>("/api/neighborhood/name-proposal/vote", { method: "PUT", body: { yes } }),
+      onSuccess,
+    }),
+    withdraw: useMutation({ mutationFn: () => api<NeighborhoodDTO>("/api/neighborhood/name-proposal", { method: "DELETE" }), onSuccess }),
+  };
+}
+
 /** Neighbors other than me. */
 export function useNeighbors(meId: string | undefined): PublicUser[] {
   const { data } = useNeighborhood();

@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { NEIGHBORS_PER_USER } from "@splash/shared";
 import { Avatar } from "../components/Avatar";
+import { InviteBox } from "../components/InviteBox";
 import { Logo } from "../components/Logo";
 import { Spinner } from "../components/States";
 import { useMeStrict } from "../lib/auth";
@@ -30,10 +31,17 @@ export function MovedIn() {
             </div>
             <p style={{ color: "var(--ink-2)" }}>
               {hood.members.length === 1 ? (
-                <>
-                  You're the first one on the street, {me.displayName}! New neighbors will move in as people join. Have
-                  a friend in mind? Share your invite code from the Neighbors tab.
-                </>
+                hood.inviteOnly ? (
+                  <>
+                    This street is all yours, {me.displayName}. Make things just for you, or bring people you know:
+                    anyone with your invite link moves in next door.
+                  </>
+                ) : (
+                  <>
+                    You're the first one on the street, {me.displayName}! New neighbors may move in as people join, and
+                    anyone with your invite link can move in too.
+                  </>
+                )
               ) : (
                 <>
                   You and {hood.members.length - 1} {hood.members.length === 2 ? "neighbor" : "neighbors"} live here
@@ -42,6 +50,11 @@ export function MovedIn() {
                 </>
               )}
             </p>
+            {hood.members.length === 1 && (
+              <div style={{ width: "100%" }}>
+                <InviteBox code={hood.inviteCode} />
+              </div>
+            )}
             <Link to="/" className="btn btn-accent btn-block">
               Look around
             </Link>

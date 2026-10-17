@@ -120,7 +120,9 @@ check(g2.status === "finished" && g2.cancelled === true, "the old game stays end
 
 // Moving never lands you next to someone you blocked.
 await call("/api/blocks", { token: ann.token, method: "POST", body: { userId: ben.id } });
-const moved = await call("/api/neighborhood/move", { token: ann.token, method: "POST" });
+// Open ben's street to matching, so only the block (not invite-only privacy) can keep ann off it.
+for (const u of [ann, ben, cy]) await call("/api/me", { token: u.token, method: "PATCH", body: { wantsPrivate: false } });
+const moved = await call("/api/neighborhood/move", { token: ann.token, method: "POST", body: { start: "match" } });
 const benHood = (await call("/api/neighborhood", { token: ben.token })).data.id;
 check(moved.status === 200 && moved.data.neighborhood.id !== benHood, "after moving, ann isn't placed on ben's street");
 
