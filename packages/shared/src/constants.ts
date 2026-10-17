@@ -2,8 +2,15 @@
 export const NEIGHBORS_PER_USER = 20;
 export const NEIGHBORHOOD_CAPACITY = NEIGHBORS_PER_USER + 1;
 
-/** Moving neighborhoods is allowed, but rarely — stable groups are the point. */
+/**
+ * Being matched with strangers again is allowed, but rarely — stable groups are the point.
+ * Starting your own street or joining a friend's with an invite has no cooldown.
+ */
 export const MOVE_COOLDOWN_DAYS = 30;
+
+/** How long a street-name proposal stays open for votes. */
+export const NAME_PROPOSAL_DAYS = 7;
+export const NEIGHBORHOOD_NAME_MAX = 40;
 
 export const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/;
 

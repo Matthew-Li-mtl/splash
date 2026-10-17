@@ -54,6 +54,8 @@ const registerSchema = z.object({
   password: z.string().min(8, "Passwords need at least 8 characters.").max(200),
   interests: interestsSchema.default([]),
   inviteCode: z.string().trim().max(32).optional(),
+  /** Without an invite: a street of your own ("solo", the default) or strangers ("match"). */
+  start: z.enum(["solo", "match"]).default("solo"),
 });
 
 authRouter.post("/register", credentialLimiter, async (req, res) => {
@@ -65,7 +67,7 @@ authRouter.post("/register", credentialLimiter, async (req, res) => {
     const invited = await Neighborhood.findOne({ inviteCode: body.inviteCode });
     if (!invited) throw badRequest("That invite code doesn't match any neighborhood.");
     if (invited.memberCount >= NEIGHBORHOOD_CAPACITY) {
-      throw badRequest("That neighborhood is full. Sign up without the code to be matched with another one.");
+      throw badRequest("That neighborhood is full. Sign up without the code to start a street of your own.");
     }
   }
 
@@ -74,9 +76,11 @@ authRouter.post("/register", credentialLimiter, async (req, res) => {
     displayName: body.displayName,
     passwordHash: await bcrypt.hash(body.password, 10),
     interests: body.interests,
+    // Invite only by default. Choosing to be matched with strangers is choosing an open street.
+    wantsPrivate: !(body.start === "match" && !body.inviteCode),
   });
   try {
-    await assignNeighborhood(user, { inviteCode: body.inviteCode || undefined });
+    await assignNeighborhood(user, { inviteCode: body.inviteCode || undefined, start: body.start });
   } catch (err) {
     await user.deleteOne();
     throw err;

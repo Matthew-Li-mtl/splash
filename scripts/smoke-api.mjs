@@ -37,9 +37,12 @@ check(health.status === 200 && health.data.db === "connected", "health ok + db c
 
 const a = await reg("alice", ["music", "writing"]);
 check(a.status === 201 && a.data.accessToken && a.data.expiresIn === 900, "register alice (15-minute access token)");
-const b = await reg("bob", ["music"]);
-const c = await reg("cara", ["puzzles"]);
-check(b.status === 201 && c.status === 201, "register bob, cara");
+// Signing up without an invite starts a street of your own; friends join it with the invite code.
+const aliceStreet = await call("/api/neighborhood", { token: a.data.accessToken });
+check(aliceStreet.data.members.length === 1, "alice starts on a street of her own");
+const b = await reg("bob", ["music"], aliceStreet.data.inviteCode);
+const c = await reg("cara", ["puzzles"], aliceStreet.data.inviteCode);
+check(b.status === 201 && c.status === 201, "register bob, cara with alice's invite");
 let A = a.data.accessToken;
 const B = b.data.accessToken, C = c.data.accessToken;
 
@@ -225,10 +228,12 @@ const prof = await call(`/api/users/bob_${suffix}`, { token: A });
 check(prof.status === 200 && prof.data.displayName === "bob", "view neighbor profile");
 const me = await call("/api/me", { token: C, method: "PATCH", body: { bio: "hi!", interests: ["puzzles", "music"] } });
 check(me.data.bio === "hi!" && me.data.interests.length === 2, "update profile");
-const move = await call("/api/neighborhood/move", { token: C, method: "POST" });
-check(move.status === 200 && move.data.neighborhood.id !== hood.data.id, "cara moved to a new neighborhood");
-const moveAgain = await call("/api/neighborhood/move", { token: C, method: "POST" });
-check(moveAgain.status === 429, "move cooldown enforced");
+const move = await call("/api/neighborhood/move", { token: C, method: "POST", body: { start: "match" } });
+check(move.status === 200 && move.data.neighborhood.id !== hood.data.id, "cara was matched onto a different street");
+const moveAgain = await call("/api/neighborhood/move", { token: C, method: "POST", body: { start: "match" } });
+check(moveAgain.status === 429, "matching cooldown enforced");
+const moveSolo = await call("/api/neighborhood/move", { token: C, method: "POST", body: { start: "solo" } });
+check(moveSolo.status === 200 && moveSolo.data.neighborhood.members.length === 1, "starting your own street has no cooldown");
 const feedAfterMove = await call("/api/posts/feed", { token: B });
 check(!feedAfterMove.data.posts.some((p) => p.author.displayName === "cara"), "moved neighbor's posts leave the feed");
 const dmToCara = await call(`/api/messages/dm_${[ids.alice, ids.cara].sort().join("_")}`, { token: A, method: "POST", body: { text: "hi" } });

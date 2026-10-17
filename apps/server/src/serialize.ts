@@ -23,6 +23,7 @@ export function toMe(u: UserDoc): Me {
     ...toPublicUser(u),
     neighborhoodId: u.neighborhoodId?.toString() ?? null,
     lastMovedAt: u.lastMovedAt?.toISOString() ?? null,
+    wantsPrivate: u.wantsPrivate ?? false,
   };
 }
 

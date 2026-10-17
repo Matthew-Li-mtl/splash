@@ -588,6 +588,87 @@ button.card:hover {
   border-color: transparent;
 }
 
+/* Radio cards: one choice per card, e.g. "Where will you live?" */
+.choice-list {
+  display: grid;
+  gap: 8px;
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  cursor: pointer;
+}
+
+.choice input[type="radio"] {
+  margin-top: 4px;
+  accent-color: var(--accent);
+}
+
+.choice:has(input[type="radio"]:checked) {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+/* The last-resort option: present, but visually quieter than the others. */
+.choice-quiet:not(:has(input[type="radio"]:checked)) {
+  border-style: dashed;
+  background: transparent;
+  opacity: 0.8;
+}
+
+/* On/off switch built on a real checkbox, so it works with keyboards and screen readers. */
+.switch {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.switch input {
+  appearance: none;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--line-2);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.switch input::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s;
+}
+
+.switch input:checked {
+  background: var(--accent);
+}
+
+.switch input:checked::after {
+  transform: translateX(18px);
+}
+
+.switch input:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
 /* Segmented control */
 .segmented {
   display: inline-flex;

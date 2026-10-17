@@ -1,10 +1,11 @@
 import { Link } from "react-router";
-import { MessageCircle } from "lucide-react";
+import { Globe, Lock, MessageCircle } from "lucide-react";
 import { directChannel } from "@splash/shared";
 import { Avatar } from "../components/Avatar";
 import { InviteBox } from "../components/InviteBox";
 import { InterestChips } from "../components/Pickers";
 import { ErrorState, Spinner } from "../components/States";
+import { StreetName } from "../components/StreetName";
 import { useMeStrict } from "../lib/auth";
 import { useNeighborhood } from "../lib/queries";
 
@@ -15,7 +16,7 @@ export function Neighbors() {
   if (hood.isPending) return <Spinner />;
   if (hood.isError) return <ErrorState error={hood.error} retry={() => hood.refetch()} />;
 
-  const { name, members, capacity, inviteCode } = hood.data;
+  const { name, members, capacity, inviteCode, inviteOnly } = hood.data;
   const emptyLots = Math.max(0, capacity - members.length);
 
   return (
@@ -26,8 +27,28 @@ export function Neighbors() {
           <p>
             {members.length} of {capacity} homes filled.
           </p>
+          <p className="small muted row" style={{ gap: 6 }}>
+            {inviteOnly ? (
+              <>
+                <Lock size={14} /> Invite only. <Link to="/me">Change in settings</Link>
+              </>
+            ) : (
+              <>
+                <Globe size={14} /> Open: Splash may match new people here. <Link to="/me">Change in settings</Link>
+              </>
+            )}
+          </p>
         </div>
       </div>
+
+      {emptyLots > 0 && (
+        <div className="card stack">
+          <h3>{members.length === 1 ? "Bring someone you know" : "Invite someone to your street"}</h3>
+          <InviteBox code={inviteCode} />
+        </div>
+      )}
+
+      <StreetName hood={hood.data} />
 
       <div className="neighbor-grid">
         {members.map((m) => (
@@ -61,14 +82,6 @@ export function Neighbors() {
         ))}
       </div>
       {emptyLots > 3 && <p className="muted small center">…and {emptyLots - 3} more empty lots waiting for neighbors.</p>}
-
-      {emptyLots > 0 && (
-        <div className="card stack">
-          <h3>Invite someone to your street</h3>
-          <p className="muted small">Anyone who signs up with this code moves in here, while there's room.</p>
-          <InviteBox code={inviteCode} />
-        </div>
-      )}
     </div>
   );
 }

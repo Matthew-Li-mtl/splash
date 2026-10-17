@@ -2,22 +2,22 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
-import { MOVE_COOLDOWN_DAYS, type AuthResponse, type Me, type NeighborhoodDTO, type UpdateMeBody } from "@splash/shared";
+import type { AuthResponse, Me, UpdateMeBody } from "@splash/shared";
 import { DevicesCard } from "../components/DevicesCard";
 import { InterestPicker, PhotoPicker } from "../components/Pickers";
 import { api, assetUrl, errorMessage } from "../lib/api";
 import { useAuth, useMeStrict } from "../lib/auth";
 import { PROFILE_PHOTO, uploadImage } from "../lib/image";
-import { qk, useNeighborhood } from "../lib/queries";
+import { qk } from "../lib/queries";
 import { useToast } from "../lib/toast";
 import { BlockedCard } from "../components/BlockedCard";
+import { StreetSettings } from "../components/StreetSettings";
 
 export function Settings() {
   const me = useMeStrict();
   const { logout, adoptSession } = useAuth();
   const qc = useQueryClient();
   const toast = useToast();
-  const { data: hood } = useNeighborhood();
 
   const [displayName, setDisplayName] = useState(me.displayName);
   const [bio, setBio] = useState(me.bio);
@@ -63,27 +63,6 @@ export function Settings() {
     },
     onError: (e) => toast(errorMessage(e), "error"),
   });
-
-  const move = useMutation({
-    mutationFn: () => api<{ user: Me; neighborhood: NeighborhoodDTO }>("/api/neighborhood/move", { method: "POST" }),
-    onSuccess: ({ user, neighborhood }) => {
-      qc.clear();
-      qc.setQueryData(qk.me, user);
-      qc.setQueryData(qk.neighborhood, neighborhood);
-      toast(`Welcome to ${neighborhood.name}! 🏡`);
-    },
-    onError: (e) => toast(errorMessage(e), "error"),
-  });
-
-  const nextMove = me.lastMovedAt ? new Date(Date.parse(me.lastMovedAt) + MOVE_COOLDOWN_DAYS * 86_400_000) : null;
-  const canMove = !nextMove || nextMove.getTime() <= Date.now();
-
-  const confirmMove = () => {
-    const ok = window.confirm(
-      `Move away from ${hood?.name ?? "your neighborhood"}? You'll get a new set of neighbors, and you can't move again for ${MOVE_COOLDOWN_DAYS} days.`,
-    );
-    if (ok) move.mutate();
-  };
 
   return (
     <div className="container stack stack-lg">
@@ -158,16 +137,7 @@ export function Settings() {
 
       <DevicesCard />
 
-      <div className="card stack">
-        <h2>Neighborhood</h2>
-        <p className="muted">
-          Neighborhoods are meant to stay put, which is how strangers become friends. If yours really isn't a fit,
-          you can move, once every {MOVE_COOLDOWN_DAYS} days.
-        </p>
-        <button className="btn btn-danger" style={{ alignSelf: "flex-start" }} onClick={confirmMove} disabled={!canMove || move.isPending}>
-          {canMove ? "Move to a new neighborhood" : `You can move again on ${nextMove!.toLocaleDateString()}`}
-        </button>
-      </div>
+      <StreetSettings />
 
       <BlockedCard />
     </div>
