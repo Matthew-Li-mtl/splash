@@ -44,7 +44,7 @@ function Landing() {
         <Logo className="brand-mark" />
         <h1 className="hero-title">Splash</h1>
         <p className="display" style={{ fontSize: "1.2rem", color: "var(--ink-2)" }}>
-          Make small things. Share them with 20 neighbors. That's it.
+          Welcome to your neighborhood.
         </p>
       </div>
 
@@ -58,21 +58,19 @@ function Landing() {
         <div className="feature">
           <span className="feature-emoji">🎨</span>
           <p>
-            <span className="bold">Make something in minutes.</span> Write, collage, make a tune, solve a puzzle. No
-            learning curve.
+            <span className="bold">Start making in seconds.</span> No learning curve!
           </p>
         </div>
         <div className="feature">
           <span className="feature-emoji">🏘️</span>
           <p>
-            <span className="bold">Twenty neighbors, not a million strangers.</span> The same small group, so you
-            actually get to know each other.
+            <span className="bold">Stay connected with up to 20 of your friends!</span>
           </p>
         </div>
         <div className="feature">
           <span className="feature-emoji">🌙</span>
           <p>
-            <span className="bold">A feed that ends.</span> Catch up with your street, then go live your life.
+            <span className="bold">This feed actually ends.</span> Catch up then go live life!
           </p>
         </div>
       </div>
